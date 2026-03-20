@@ -1,6 +1,6 @@
 # UniMatch – School-Based University Application & Eligibility System
 
-UniMatch is a school-operated web platform that helps South African high schools track and support every matric learner’s university application journey. It is designed for Life Orientation teachers, guidance counselors, and school administrators to:
+UniMatch is a school-operated web platform that helps South African high schools track and support every matric learner's university application journey. It is designed for Life Orientation teachers, guidance counselors, and school administrators to:
 
 - Manage learner academic data and university application statuses.
 - Generate eligibility-based university recommendations using APS and programme requirements.
@@ -25,11 +25,37 @@ UniMatch aims to:
 
 ---
 
+## Assignment Progress
+
+### ✅ Assignment 3: System Specification & Architecture
+- Completed comprehensive system specification document
+- Designed C4 architecture diagrams (Context, Container, Component, Code)
+- Defined system scope and feasibility analysis
+- Created technical architecture with React frontend, Node.js backend, PostgreSQL database
+
+### ✅ Assignment 4: Stakeholder & System Requirements
+- Identified and analyzed 8 key stakeholders with detailed concerns and success metrics
+- Defined 15 functional requirements with acceptance criteria
+- Specified 20 non-functional requirements across all quality attribute categories
+- Created comprehensive System Requirements Document with traceability matrix
+- Documented challenges in balancing stakeholder needs
+
+---
+
 ## Project Documents
 
+### Assignment 3 Documents
 - [System Specification – SPECIFICATION.md](SPECIFICATION.md)  
 - [Architecture & C4 Diagrams – ARCHITECTURE.md](ARCHITECTURE.md)
 
+### Assignment 4 Documents
+- [Stakeholder Analysis – STAKEHOLDER_ANALYSIS.md](STAKEHOLDER_ANALYSIS.md)
+- [System Requirements Document – SYSTEM_REQUIREMENTS_COMPLETE.md](SYSTEM_REQUIREMENTS_COMPLETE.md)
+- [Assignment 4 Reflection – ASSIGNMENT_4_REFLECTION.md](ASSIGNMENT_4_REFLECTION.md)
+
+### Supporting Requirements Documents
+- [Functional Requirements – SYSTEM_REQUIREMENTS (Functional Section).md](SYSTEM_REQUIREMENTS%20(Functional%20Section).md)
+- [Non-Functional Requirements – SYSTEM_REQUIREMENTS (Non-Functional Section).md](SYSTEM_REQUIREMENTS%20(Non-Functional%20Section).md)
 ---
 
 ## Planned Tech Stack (Proposed for This Project)
@@ -39,3 +65,6 @@ UniMatch aims to:
 - **Database**: PostgreSQL (relational)
 - **Notifications**: Email-based deadline reminders (conceptual; may be mocked)
 - **Deployment**: Cloud-hosted (conceptual) with HTTPS access
+
+
+[def]: SYSTEM_REQUIREMENTS.md
