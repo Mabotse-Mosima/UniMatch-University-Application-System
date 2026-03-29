@@ -16,9 +16,9 @@ Version: 1.0
 
 **Domain**: School administration and higher-education guidance, focused on South African high schools.
 
-UniMatch is designed for public and private high schools that support Grade 12 (matric) learners. The system is operated exclusively by school staff (Life Orientation teachers, guidance counselors, and school administrators). It centralizes learner academic data, university application information, recommendation letters, and eligibility recommendations based on South African university entry requirements.
+**Updated vision (Assignment 5):** UniMatch is a **centralized decision-support and application coordination platform** that connects **learners**, **school staff** (teachers, counselors, administrators), **parents/guardians**, **university admissions offices**, and **government/district** stakeholders. It provides verified programme information, guided eligibility recommendations, **secure fee payment** (via an external payment gateway—UniMatch does not store card data), application package compilation, submission orchestration, and notifications—while **school staff remain responsible** for academic data quality, guidance sessions, and recommendation letters.
 
-Learners **do not** use the system directly. All interactions with UniMatch are mediated by school staff to maintain privacy, accuracy, and control.
+The detailed use case model, lifecycle states, and actor relationships are defined in **[Use_Case_Specifications.md](Use_Case_Specifications.md)**.
 
 ### 1.3 Problem Statement
 
@@ -31,66 +31,60 @@ Many South African high schools still rely on manual or fragmented methods (pape
 
 This leads to:
 
-- Learners applying late or missing deadlines.
-- Learners applying to programmes where they are not eligible.
-- Little visibility for school leaders and government about placement rates.
-- Extra administrative burden on teachers and counselors.
+- Late or incomplete applications and missed programme deadlines.
+- Learners applying to programmes where they are not competitive.
+- Limited visibility for school leadership and government on placement trends.
+- Heavy manual work for teachers and inconsistent communication with parents.
 
-**UniMatch** addresses this by providing a centralized, school-based platform where staff can:
+**UniMatch** addresses this by providing **one coordinated platform** where:
 
-- Capture and manage learner subject marks and profiles.
-- Track university applications and statuses.
-- Automatically match learner results to university programme requirements.
-- Generate ranked eligibility recommendations.
-- Upload and manage recommendation letters and supporting documents.
-- View dashboards and export reports for internal and government use.
+- **Staff** manage learner profiles, import marks, run eligibility recommendations, conduct guidance, compile packages, and upload recommendation documents.
+- **Learners** authenticate to select programmes, pay official fees through a **certified external gateway**, submit applications, and track status.
+- **Parents/guardians** can monitor progress and receive notifications (per role rules).
+- **University admissions** publish programme requirements and record decisions **inside UniMatch** (orchestration layer—not a replacement for each university’s full admission system).
+- **District/DoE** access **anonymized** analytics only.
 
-### 1.4 Individual Scope and Feasibility
+### 1.4 Scope, Phasing, and Feasibility
 
-This is an individual semester-long project, so the scope is carefully limited to remain implementable by one person:
+This remains an **individual semester project**; implementation may be **phased** while the **specification** describes the full target system consistent with Assignment 5.
 
 **In Scope for Implementation (MVP):**
 
-- Basic authentication and role-based access (Teacher/Counselor, School Administrator, optional Government/District read-only).
-- CRUD operations for:
-  - Learners and their marks.
-  - University programmes and basic entry requirements.
-  - University applications and statuses.
-  - Document metadata (file paths, types).
-- A simple rule-based eligibility engine:
-  - Compute APS-like scores from subject marks.
-  - Compare scores and mandatory subjects to programme minimum requirements.
-  - Classify programmes as `Guaranteed`, `Likely`, `Borderline`, or `Not Eligible`.
-- A web dashboard UI:
-  - Tables and basic charts (e.g., bar charts for status distribution).
-  - Filters and sorting for learners, applications, and recommendations.
-- CSV export for reports (school-level and anonymized summaries).
-- Conceptual design of notifications (e.g., upcoming deadlines), with a minimal implementation (e.g., in-app alerts; email can be mocked).
+- Multi-role authentication and RBAC (Learner, Teacher/Counselor, Parent/Guardian, School Administrator, University Admissions, District/DoE read-only, School IT Support).
+- Learner-facing flows: programme exploration, selection, fee payment confirmation, package review, submission, status tracking, notifications.
+- Staff flows: learner and marks management, CSV import, AI/rule-based recommendations with explanatory factors, guidance session notes, document uploads, application status updates.
+- University admissions flows: publish/maintain programmes, review submissions, record decisions (audit trail).
+- Integrations: external **payment gateway** (cards not stored in UniMatch), email/SMS for notifications, optional future hooks to university systems.
 
-**Out of Scope / Simplified (Documented as Future Enhancements):**
+**Phasing (feasibility for one developer):**
 
-- Real-time integration with actual university portals (e.g., online applications).
-- Complex AI models for recommendations.
-- NSFAS or funding system integration.
-- Full legal POPIA certification (only conceptual compliance in requirements and design).
-- National-scale multi-tenant deployment (focus on single-school instance, but design may hint at multi-school support).
+- **Phase 1 (core):** Staff dashboard, learner profiles, marks, recommendations, documents, basic application tracking, audit logging.
+- **Phase 2:** Learner and parent portals, payment integration, university admissions workflows, full notification suite, performance hardening per NFRs.
 
-These constraints make UniMatch feasible for one student while still covering full system specification and architecture (including C4 diagrams and end-to-end components).
+**Out of scope / deferred (unless course expands scope):**
+
+- NSFAS or full national funding integration (may be future enhancement).
+- Full legal POPIA certification (design follows POPIA principles; formal certification out of scope).
+- Replacing every university’s entire backend admission system—UniMatch **coordinates** and **records** outcomes as per use cases.
+
+Version 1.0 of this document described a **staff-only** MVP; **Version 2.0** supersedes that boundary for stakeholder and academic alignment with **[Use_Case_Specifications.md](Use_Case_Specifications.md)**, **[TEST_CASES.md](TEST_CASES.md)**, and **[ASSIGNMENT5_REFLECTION.md](ASSIGNMENT5_REFLECTION.md)**.
 
 ---
 
 ## 2. System Overview
 
-UniMatch is a web-based, school-operated platform that supports the entire lifecycle of matric learners’ university applications:
+UniMatch is a **web-based coordination platform** that supports the **end-to-end** matric university application journey described in Assignment 5:
 
-- **Learner Management**: Store basic learner data, subjects, marks, and assigned counselor.
-- **Application Tracking**: Record each application a learner submits, with current status and key dates.
-- **Recommendation Engine**: Generate programme recommendations by comparing learner marks with minimum university requirements.
-- **Document Management**: Upload and manage recommendation letters and other application documents.
-- **Dashboards and Reporting**: Provide visual dashboards and exportable reports for school management and optional government monitoring.
-- **Notifications**: Alert staff to deadlines and missing information.
+- **Learner & school data**: Profiles, subjects, marks, counselor assignment; bulk CSV import where applicable.
+- **Eligibility & guidance**: Rule-based / AI-assisted recommendations (Guaranteed / Likely / Borderline / Not Eligible) with transparent factors; structured guidance sessions documented by staff.
+- **Programme catalogue**: University admissions maintain published programme requirements, fees, and deadlines.
+- **Applications**: Lifecycle from Draft through fee payment, package readiness, submission, university review, and final decision (see lifecycle in **Use_Case_Specifications.md** §4).
+- **Payments**: Application fees processed via **external payment gateway**; UniMatch stores only references and status—not card numbers.
+- **Documents**: Recommendation letters and supporting files uploaded by staff; learners review packages before submission per use cases.
+- **Dashboards & reporting**: School dashboards; **anonymized** district/DoE analytics; exportable reports.
+- **Notifications**: Email/SMS/in-app reminders for deadlines, decisions, and missing documents—role-appropriate.
 
-The system is accessed through a modern, responsive web UI optimized for school staff workflows (desktop-first, tablet-friendly).
+Client applications include **staff web UI**, **learner web/app experience**, and **parent/guardian** visibility where requirements permit—all against a shared **REST API** and relational datastore as shown in **ARCHITECTURE.md**.
 
 ---
 
@@ -318,7 +312,11 @@ The system is accessed through a modern, responsive web UI optimized for school 
 - **Documents**
   - `id`, `learner_id`, `file_name`, `file_type`, `file_path`, `document_type`, `uploaded_by`, `uploaded_at`
 - **Users**
-  - `id`, `name`, `email`, `role`, `password_hash`, `created_at`
+  - `id`, `name`, `email`, `role` (Learner, Staff, Parent, Admin, University, District, IT), `password_hash`, `created_at`
+- **Payments** *(Assignment 5)*  
+  - `id`, `application_id`, `gateway_reference`, `amount`, `status`, `timestamp` — **no** card or CVV storage
+- **Notifications** *(Assignment 5)*  
+  - `id`, `user_id`, `channel`, `payload`, `read_at`
 
 ---
 
@@ -346,8 +344,10 @@ The system is accessed through a modern, responsive web UI optimized for school 
 
 ## 9. Future Enhancements
 
-- Real-time integration with university online application portals.
-- Advanced AI-driven recommendation models considering historical outcomes.
-- Integration with NSFAS or other funding status systems.
-- Mobile app or PWA for staff notifications and quick updates.
-- Multi-tenant architecture supporting multiple schools in one deployment.
+Items **below** extend the Assignment 5 baseline rather than replace it:
+
+- Deeper **real-time** bidirectional sync with each university’s legacy admission system (beyond orchestration and decision recording in UniMatch).
+- **Advanced** ML-based recommendation models (beyond rule-based + explanatory factors in current spec).
+- **NSFAS** or other funding status integration.
+- **Native mobile apps** for learners and parents (optional; responsive web remains baseline).
+- **Multi-tenant** SaaS operation at national scale (architecture supports growth; operations model TBD).

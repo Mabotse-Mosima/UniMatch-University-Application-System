@@ -9,11 +9,25 @@ Version: 1.0
 ## 1. Introduction
 
 - **Project Title**: UniMatch – School-Based University Application & Eligibility System  
-- **Domain**: School administration and higher-education guidance (South African high schools).  
-- **Problem Statement**: Schools need a centralized, school-operated platform to manage learner application data, eligibility, recommendation letters, and reporting.  
-- **Individual Scope / Feasibility**: A single-school, web-based solution with one frontend (React), one backend API (Node.js/Express), and a relational database (PostgreSQL) is realistic for an individual student over one semester.
+- **Domain**: School administration, higher-education guidance, and **multi-party application coordination** (South African high schools, learners, parents, universities, district/DoE).  
+- **Problem Statement**: Stakeholders need a **single coordination layer** for programme data, eligibility guidance, **secure fee payment** (external gateway), application packages, submissions, decisions, and **anonymized** government analytics—without replacing each university’s full admission backend.  
+- **Individual Scope / Feasibility**: A **modular** web architecture (React frontends for staff and learners, Node.js/Express API, PostgreSQL, document storage, notification integration) can be delivered in **phases**; Assignment 5 defines the **target** end-to-end behaviour and tests.
 
-This document presents the architecture using the **C4 model** (Context, Container, and Component diagrams) with Mermaid.
+This document presents the architecture using the **C4 model** (Context, Container, and Component diagrams) with Mermaid. Diagrams in `screenshot/` may reflect the **core staff-centric** context; the **logical** system boundary includes additional actors and systems below.
+
+### 1.1 Extended platform context (Assignment 5)
+
+In addition to staff and district users, the target system includes:
+
+| Element | Role |
+| --- | --- |
+| **Learner** | Authenticated client for programme selection, fee initiation, package review, submission, status tracking (see **Use_Case_Specifications.md**). |
+| **Parent / Guardian** | Limited visibility and notifications per SRS FR12. |
+| **University Admissions** | Publishes programmes; reviews submissions; records decisions in UniMatch. |
+| **Payment Gateway** | External system; UniMatch receives payment references only (see **TEST_CASES.md** TC-NFR03). |
+| **Email / SMS providers** | Deliver notifications (FR8, UC13). |
+
+**Container-level implications:** separate **web apps** or route namespaces for **Staff**, **Learner**, and **University** portals are recommended; all share one **API** and **database** with strict RBAC. Payment and messaging are **integrations**, not custom implementations inside UniMatch.
 
 ---
 

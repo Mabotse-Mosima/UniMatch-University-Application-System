@@ -3,13 +3,14 @@
 **Author**: Mmabotse Mosima  
 **Date**: 2026-03-20  
 **Version**: 2.0  
-**Assignment**: 4 - Stakeholder and System Requirements Documentation
+**Assignment**: 4 - Stakeholder and System Requirements Documentation  
+**Alignment**: This SRD is the **requirements baseline** for functional and non-functional IDs used in **TEST_CASES.md**. It is **consistent** with the **Assignment 5** vision in **Use_Case_Specifications.md** (learners, parents, university admissions, payment gateway orchestration, notifications). **SPECIFICATION.md** v2.0 (2026-03-29) consolidates the same target system description for Assignments 3–5.
 
 ---
 
 ## Document Overview
 
-This System Requirements Document (SRD) provides comprehensive functional and non-functional requirements for the UniMatch system, building upon the stakeholder analysis conducted in Assignment 4. The requirements are traceable to stakeholder needs and include specific acceptance criteria and measurable quality attributes.
+This System Requirements Document (SRD) provides comprehensive functional and non-functional requirements for the UniMatch system, building upon the stakeholder analysis conducted in Assignment 4. The requirements are traceable to stakeholder needs and include specific acceptance criteria and measurable quality attributes. Assignment 5 use cases and tests **realize** these requirements in verifiable scenarios.
 
 ---
 
