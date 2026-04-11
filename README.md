@@ -77,3 +77,35 @@ UniMatch is a **centralized decision-support and application coordination platfo
 - **Deployment**: Cloud-hosted (conceptual) with HTTPS access
 
 **Traceability:** Requirement IDs in **TEST_CASES.md** map to **SYSTEM_REQUIREMENTS_COMPLETE.md** (FR1–FR15, NFR1–NFR20). **SPECIFICATION.md** v2.0 describes the same product vision as **Use_Case_Specifications.md**. Implementation may follow **Phase 1 / Phase 2** in SPECIFICATION §1.4.
+
+## Project Board — Assignment 7
+
+This project uses a customised **Automated Kanban** board managed through GitHub Projects.
+View the live board: [UniMatch Project Board](https://github.com/users/Mabotse-Mosima/projects/6)
+
+### Column structure
+
+| Column | Purpose |
+|---|---|
+| Backlog | All issues not yet assigned to the current sprint |
+| To Do | Issues committed to the current sprint, ready to start |
+| In Progress | Actively being worked on |
+| Blocked | Work started but waiting on an external dependency |
+| In Review | Submitted deliverables pending feedback |
+| Testing | Implementation complete; acceptance criteria being verified against TEST_CASES.md |
+| Done | Definition of Done satisfied; issue closed and linked to sprint milestone |
+
+### Why Automated Kanban?
+Automated Kanban was selected because it auto-moves issues when opened (→ To Do) and
+closed (→ Done), eliminating manual card maintenance for a solo developer playing all
+three Scrum roles.
+
+### Custom columns added
+- **Blocked**: Added to make external dependencies visible. WIP limit: 2 tasks.
+- **Testing**: Added to enforce the Definition of Done — coded ≠ done until tested.
+  WIP limit: 3 tasks.
+
+### Labels
+Every issue is labelled with MoSCoW priority (`must-have`, `should-have`, `could-have`),
+story points (`SP:2`, `SP:3`, `SP:5`, `SP:8`), and sprint (`sprint-1`, `sprint-2`, etc.).
+All Sprint 1 issues are assigned to @Mabotse-Mosima.
