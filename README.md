@@ -36,6 +36,11 @@ UniMatch is a **centralized decision-support and application coordination platfo
 - Functional and non-functional test cases (including payment security and performance)
 - Reflection on requirements-to-use-case-to-test traceability
 
+### Assignment 6: Agile Planning
+- User stories, product backlog, and Sprint 1 plan (Scrum roles and GitHub tooling)
+- Traceability from stories to requirements, use cases, and tests
+- Reflection on backlog prioritisation and sprint scope
+
 ---
 
 ## Project Documents
@@ -53,6 +58,9 @@ UniMatch is a **centralized decision-support and application coordination platfo
 - [Use Case Specifications – Use_Case_Specifications.md](Use_Case_Specifications.md)
 - [Test Cases – TEST_CASES.md](TEST_CASES.md)
 - [Assignment 5 Reflection – ASSIGNMENT5_REFLECTION.md](ASSIGNMENT5_REFLECTION.md)
+
+### Assignment 6
+- [Agile User Stories, Backlog & Sprint Plan – ASSIGNMENT 6 AGILE PLAN.md](ASSIGNMENT%206%20AGILE%20PLAN.md)
 
 ### Supporting
 - [Functional Requirements – SYSTEM_REQUIREMENTS (Functional Section).md](SYSTEM_REQUIREMENTS%20(Functional%20Section).md)
