@@ -41,6 +41,10 @@ UniMatch is a **centralized decision-support and application coordination platfo
 - Traceability from stories to requirements, use cases, and tests
 - Reflection on backlog prioritisation and sprint scope
 
+### Assignment 10: From Class Diagrams to Code
+- Domain classes implemented from `CLASS_DIAGRAM.md` under `src/unimatch/`
+- All six creational patterns under `creational_patterns/` with unit tests under `tests/`
+
 ---
 
 ## Project Documents
@@ -117,3 +121,28 @@ three Scrum roles.
 Every issue is labelled with MoSCoW priority (`must-have`, `should-have`, `could-have`),
 story points (`SP:2`, `SP:3`, `SP:5`, `SP:8`), and sprint (`sprint-1`, `sprint-2`, etc.).
 All Sprint 1 issues are assigned to @Mabotse-Mosima.
+
+---
+
+## Assignment 10: Implementation (code)
+
+**Language choice:** Python 3.10+ was used so the Assignment 9 `CLASS_DIAGRAM.md` entities and enums map cleanly to `dataclasses` and `Enum`, with a `src/` layout that matches common pytest packaging. The domain layer stays free of web-framework dependencies, which matches the documented future stack (React / Node) while still giving a verifiable object model for this coursework milestone.
+
+**Design alignment:** Core attributes, methods, and relationships follow `CLASS_DIAGRAM.md` (composition for `LearnerProfile`–`Mark` and `Application`–`StatusHistoryEntry`, aggregation-style handling for application documents, and separate service classes as in the diagram). `DOMAIN_MODEL.md` informed a few supporting enums (for example `ProfileStatusEnum`) where the class diagram references them without re-listing every literal.
+
+**Creational patterns (see `creational_patterns/`):**
+
+| Pattern | Rationale (brief) |
+|---|---|
+| Simple Factory | `VehicleFactory` centralizes choosing `Car` / `Bike` / `Truck` from one API. |
+| Factory Method | `PaymentProcessor` defers creation logic to `CreditCardProcessor` vs `PayPalProcessor`. |
+| Abstract Factory | `GUIFactory` returns a family-specific `Button` (`WindowsButton` vs `MacOSButton`). |
+| Builder | `PizzaBuilder` models many optional parts (`add_cheese`, `add_toppings`) with validation on `build()`. |
+| Prototype | `ShapeCache` stores configured `Circle` / `Rectangle` prototypes and returns clones. |
+| Singleton | `DatabaseConnection` is a process-wide single instance with a lock for thread-safe initialization. |
+
+**Tests and coverage:** From the repository root, install dev dependencies (`pip install -r requirements.txt`) then run:
+
+`python -m pytest --cov=unimatch --cov=creational_patterns --cov-report=term-missing`
+
+For an HTML coverage report, add `--cov-report=html` and open `htmlcov/index.html`.
