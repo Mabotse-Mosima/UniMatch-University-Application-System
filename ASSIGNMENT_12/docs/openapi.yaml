@@ -1,0 +1,927 @@
+openapi: 3.0.3
+info:
+  title: UniMatch API
+  description: |
+    REST API for the UniMatch university application matching system.
+    
+    Manages learner profiles, university programmes, and application workflows.
+    
+    ## Architecture
+    This API follows a layered architecture:
+    - **Entities** (Assignment 9) – Domain model (LearnerProfile, UniversityProgramme, Application, etc.)
+    - **Repositories** (Assignment 11) – Persistence abstraction (InMemory implementations)
+    - **Services** (Assignment 12) – Business logic enforcement
+    - **API** (Assignment 12) – REST endpoints exposed via FastAPI
+    
+    ## Business Rules
+    - A learner may have at most **5 active** applications at any time.
+    - Duplicate applications to the same programme are rejected.
+    - Applications can only be made to **Published** programmes with a future deadline.
+    - APS is calculated using the NSC point scale (top 6 subjects).
+  version: 1.0.0
+  contact:
+    name: UniMatch Team
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+
+tags:
+  - name: Learners
+    description: Learner profile management and APS operations
+  - name: Programmes
+    description: University programme listings and eligibility checks
+  - name: Applications
+    description: Application lifecycle management
+  - name: Health
+    description: Service health
+
+paths:
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Learners
+  # ──────────────────────────────────────────────────────────────────────────
+
+  /api/learners:
+    get:
+      tags: [Learners]
+      summary: List all learner profiles
+      operationId: listLearners
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LearnerResponse'
+
+    post:
+      tags: [Learners]
+      summary: Create a learner profile
+      operationId: createLearner
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLearnerRequest'
+            example:
+              full_name: "Thabo Nkosi"
+              school_id_number: "2024-0001"
+              grade: 12
+              counselor_id: "00000000-0000-0000-0000-000000000001"
+              school_id: "00000000-0000-0000-0000-000000000002"
+      responses:
+        '201':
+          description: Learner profile created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LearnerResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /api/learners/{learner_id}:
+    parameters:
+      - $ref: '#/components/parameters/LearnerIdParam'
+
+    get:
+      tags: [Learners]
+      summary: Get a learner profile
+      operationId: getLearner
+      responses:
+        '200':
+          description: Learner profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LearnerResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Learners]
+      summary: Update a learner profile
+      operationId: updateLearner
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateLearnerRequest'
+      responses:
+        '200':
+          description: Updated learner profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LearnerResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Learners]
+      summary: Delete a learner profile
+      operationId: deleteLearner
+      responses:
+        '204':
+          description: Learner deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/learners/{learner_id}/marks:
+    parameters:
+      - $ref: '#/components/parameters/LearnerIdParam'
+    post:
+      tags: [Learners]
+      summary: Add a mark to a learner profile
+      operationId: addMark
+      description: |
+        Adds a subject mark to the learner. The APS score is recalculated 
+        automatically using the NSC 7-point scale.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddMarkRequest'
+            example:
+              subject_name: "Mathematics"
+              score: 75
+              exam_type: "NSC"
+              academic_year: 2024
+      responses:
+        '201':
+          description: Mark added; returns updated learner profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LearnerResponse'
+        '400':
+          description: Invalid mark score (must be 0–100)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/learners/{learner_id}/aps:
+    parameters:
+      - $ref: '#/components/parameters/LearnerIdParam'
+    get:
+      tags: [Learners]
+      summary: Get a learner's APS score
+      operationId: getAps
+      description: |
+        Calculates and returns the NSC APS score based on the learner's 
+        recorded marks. Top 6 subjects are used when more than 6 marks exist.
+      responses:
+        '200':
+          description: APS score
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApsResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/learners/{learner_id}/deactivate:
+    parameters:
+      - $ref: '#/components/parameters/LearnerIdParam'
+    post:
+      tags: [Learners]
+      summary: Deactivate a learner profile
+      operationId: deactivateLearner
+      description: |
+        Deactivates the learner profile and automatically cancels all 
+        non-terminal active applications.
+      responses:
+        '200':
+          description: Deactivated learner profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LearnerResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Programmes
+  # ──────────────────────────────────────────────────────────────────────────
+
+  /api/programmes:
+    get:
+      tags: [Programmes]
+      summary: List all programmes
+      operationId: listProgrammes
+      parameters:
+        - name: published_only
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+          description: If true, return only currently published, non-expired programmes
+      responses:
+        '200':
+          description: List of programmes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProgrammeResponse'
+
+    post:
+      tags: [Programmes]
+      summary: Create a university programme
+      operationId: createProgramme
+      description: Creates a new programme in **Draft** status.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProgrammeRequest'
+      responses:
+        '201':
+          description: Programme created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgrammeResponse'
+
+  /api/programmes/{programme_id}:
+    parameters:
+      - $ref: '#/components/parameters/ProgrammeIdParam'
+
+    get:
+      tags: [Programmes]
+      summary: Get a programme
+      operationId: getProgramme
+      responses:
+        '200':
+          description: Programme details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgrammeResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Programmes]
+      summary: Update a programme
+      operationId: updateProgramme
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProgrammeRequest'
+      responses:
+        '200':
+          description: Updated programme
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgrammeResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Programmes]
+      summary: Delete a programme
+      operationId: deleteProgramme
+      responses:
+        '204':
+          description: Programme deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/programmes/{programme_id}/publish:
+    parameters:
+      - $ref: '#/components/parameters/ProgrammeIdParam'
+    post:
+      tags: [Programmes]
+      summary: Publish a programme
+      operationId: publishProgramme
+      description: |
+        Publishes a Draft programme so learners can apply.
+        **Fails with 400** if the application deadline has already passed.
+      responses:
+        '200':
+          description: Published programme
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgrammeResponse'
+        '400':
+          description: Deadline has passed; cannot publish
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/programmes/{programme_id}/deactivate:
+    parameters:
+      - $ref: '#/components/parameters/ProgrammeIdParam'
+    post:
+      tags: [Programmes]
+      summary: Deactivate a programme
+      operationId: deactivateProgramme
+      responses:
+        '200':
+          description: Deactivated programme
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgrammeResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/programmes/{programme_id}/extend-deadline:
+    parameters:
+      - $ref: '#/components/parameters/ProgrammeIdParam'
+    post:
+      tags: [Programmes]
+      summary: Extend the application deadline
+      operationId: extendDeadline
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExtendDeadlineRequest'
+      responses:
+        '200':
+          description: Programme with updated deadline
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgrammeResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/programmes/{programme_id}/eligibility:
+    parameters:
+      - $ref: '#/components/parameters/ProgrammeIdParam'
+    get:
+      tags: [Programmes]
+      summary: Check a learner's eligibility
+      operationId: checkEligibility
+      description: |
+        Returns an eligibility category based on the learner's APS score vs 
+        the programme's minimum APS requirement.
+        
+        | Condition            | Result       |
+        |----------------------|--------------|
+        | APS ≥ min + 4        | Guaranteed   |
+        | APS ≥ min + 1        | Likely       |
+        | APS = min            | Borderline   |
+        | APS < min            | NotEligible  |
+      parameters:
+        - name: learner_aps
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 42
+          description: The learner's APS score
+      responses:
+        '200':
+          description: Eligibility result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EligibilityResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Applications
+  # ──────────────────────────────────────────────────────────────────────────
+
+  /api/applications:
+    get:
+      tags: [Applications]
+      summary: List all applications
+      operationId: listApplications
+      responses:
+        '200':
+          description: List of applications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ApplicationResponse'
+
+    post:
+      tags: [Applications]
+      summary: Create a new application
+      operationId: createApplication
+      description: |
+        Creates an application for a learner to a programme.
+        
+        **Business rules enforced:**
+        - Learner may have at most **5** active (non-terminal) applications.
+        - Duplicate applications to the same programme are rejected (409).
+        - Programme must be in `Published` status and deadline must not have passed.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateApplicationRequest'
+      responses:
+        '201':
+          description: Application created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationResponse'
+        '404':
+          description: Learner or Programme not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '409':
+          description: Duplicate application or programme not active
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '422':
+          description: Active application limit (5) reached
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+
+  /api/applications/{application_id}:
+    parameters:
+      - $ref: '#/components/parameters/ApplicationIdParam'
+
+    get:
+      tags: [Applications]
+      summary: Get an application
+      operationId: getApplication
+      responses:
+        '200':
+          description: Application details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Applications]
+      summary: Hard-delete an application
+      operationId: deleteApplication
+      description: Permanently deletes an application record. Prefer `/cancel` for soft cancellation.
+      responses:
+        '204':
+          description: Application deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/applications/learner/{learner_id}:
+    parameters:
+      - $ref: '#/components/parameters/LearnerIdParam'
+    get:
+      tags: [Applications]
+      summary: Get all applications for a learner
+      operationId: listLearnerApplications
+      responses:
+        '200':
+          description: List of learner's applications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ApplicationResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/applications/{application_id}/status:
+    parameters:
+      - $ref: '#/components/parameters/ApplicationIdParam'
+    put:
+      tags: [Applications]
+      summary: Update application status
+      operationId: updateApplicationStatus
+      description: |
+        Transitions an application to a new status.
+        
+        Invalid transitions (e.g., from Accepted to Draft) return **422**.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStatusRequest'
+      responses:
+        '200':
+          description: Updated application
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: Invalid status transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+
+  /api/applications/{application_id}/submit:
+    parameters:
+      - $ref: '#/components/parameters/ApplicationIdParam'
+    post:
+      tags: [Applications]
+      summary: Submit an application
+      operationId: submitApplication
+      description: |
+        Submits an application. Requires:
+        - Fee payment reference recorded
+        - At least one document linked
+        - Deadline not passed
+      responses:
+        '200':
+          description: Submitted application
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationResponse'
+        '400':
+          description: Application is not ready to submit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/applications/{application_id}/cancel:
+    parameters:
+      - $ref: '#/components/parameters/ApplicationIdParam'
+    post:
+      tags: [Applications]
+      summary: Cancel an application
+      operationId: cancelApplication
+      description: |
+        Soft-cancels an application by setting its status to `Cancelled`.
+        Cannot cancel applications already in terminal states 
+        (Accepted, Rejected, Cancelled, DeadlineMissed).
+      responses:
+        '200':
+          description: Cancelled application
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: Cannot cancel a terminal application
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Health
+  # ──────────────────────────────────────────────────────────────────────────
+
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is running
+          content:
+            application/json:
+              example:
+                status: ok
+                service: UniMatch API
+                version: "1.0.0"
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Components
+# ──────────────────────────────────────────────────────────────────────────────
+
+components:
+
+  parameters:
+    LearnerIdParam:
+      name: learner_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+    ProgrammeIdParam:
+      name: programme_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+    ApplicationIdParam:
+      name: application_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorDetail'
+          example:
+            detail: "Learner 00000000-0000-0000-0000-000000000001 not found"
+
+    ValidationError:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorDetail'
+
+  schemas:
+
+    ErrorDetail:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: Human-readable error message
+
+    # ── Learner schemas ───────────────────────────────────────────────────────
+
+    CreateLearnerRequest:
+      type: object
+      required: [full_name, school_id_number, grade, counselor_id, school_id]
+      properties:
+        full_name:
+          type: string
+          example: "Thabo Nkosi"
+        school_id_number:
+          type: string
+          example: "2024-0001"
+        grade:
+          type: integer
+          minimum: 8
+          maximum: 12
+          example: 12
+        counselor_id:
+          type: string
+          format: uuid
+        school_id:
+          type: string
+          format: uuid
+
+    UpdateLearnerRequest:
+      type: object
+      properties:
+        full_name:
+          type: string
+        grade:
+          type: integer
+          minimum: 8
+          maximum: 12
+        school_id_number:
+          type: string
+
+    AddMarkRequest:
+      type: object
+      required: [subject_name, score, exam_type, academic_year]
+      properties:
+        subject_name:
+          type: string
+          example: "Mathematics"
+        score:
+          type: integer
+          minimum: 0
+          maximum: 100
+          example: 75
+        exam_type:
+          type: string
+          example: "NSC"
+        academic_year:
+          type: integer
+          example: 2024
+
+    LearnerResponse:
+      type: object
+      properties:
+        learner_id:
+          type: string
+          format: uuid
+        full_name:
+          type: string
+        school_id_number:
+          type: string
+        grade:
+          type: integer
+        status:
+          type: string
+          enum: [Creating, Incomplete, Active, MarksRecorded, RecommendationsGenerated, Stale, GuidanceComplete, Inactive]
+        counselor_id:
+          type: string
+          format: uuid
+        school_id:
+          type: string
+          format: uuid
+        aps_score:
+          type: integer
+          description: Current NSC APS score (top 6 subjects)
+        mark_count:
+          type: integer
+
+    ApsResponse:
+      type: object
+      properties:
+        learner_id:
+          type: string
+          format: uuid
+        aps_score:
+          type: integer
+
+    # ── Programme schemas ─────────────────────────────────────────────────────
+
+    CreateProgrammeRequest:
+      type: object
+      required: [university_id, name, faculty, minimum_aps, application_deadline, application_fee, published_by]
+      properties:
+        university_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: "BSc Computer Science"
+        faculty:
+          type: string
+          example: "Science"
+        minimum_aps:
+          type: integer
+          minimum: 0
+          maximum: 42
+          example: 28
+        application_deadline:
+          type: string
+          format: date
+          example: "2025-09-30"
+        application_fee:
+          type: string
+          example: "200.00"
+        required_documents:
+          type: array
+          items:
+            type: string
+          example: ["ID", "Matric Certificate"]
+        published_by:
+          type: string
+          format: uuid
+
+    UpdateProgrammeRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        faculty:
+          type: string
+        minimum_aps:
+          type: integer
+          minimum: 0
+          maximum: 42
+        application_fee:
+          type: string
+        required_documents:
+          type: array
+          items:
+            type: string
+
+    ExtendDeadlineRequest:
+      type: object
+      required: [new_deadline]
+      properties:
+        new_deadline:
+          type: string
+          format: date
+          example: "2025-10-31"
+
+    ProgrammeResponse:
+      type: object
+      properties:
+        programme_id:
+          type: string
+          format: uuid
+        university_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        faculty:
+          type: string
+        minimum_aps:
+          type: integer
+        application_deadline:
+          type: string
+          format: date
+        application_fee:
+          type: string
+        status:
+          type: string
+          enum: [Draft, Published, UnderEdit, Expired, Deactivated, Archived]
+        is_active:
+          type: boolean
+
+    EligibilityResponse:
+      type: object
+      properties:
+        programme_id:
+          type: string
+          format: uuid
+        learner_aps:
+          type: integer
+        minimum_aps:
+          type: integer
+        eligibility:
+          type: string
+          enum: [Guaranteed, Likely, Borderline, NotEligible]
+
+    # ── Application schemas ───────────────────────────────────────────────────
+
+    CreateApplicationRequest:
+      type: object
+      required: [learner_id, programme_id, fee_amount]
+      properties:
+        learner_id:
+          type: string
+          format: uuid
+        programme_id:
+          type: string
+          format: uuid
+        fee_amount:
+          type: string
+          example: "200.00"
+
+    UpdateStatusRequest:
+      type: object
+      required: [new_status, actor_id]
+      properties:
+        new_status:
+          type: string
+          enum: [Draft, FeeOutstanding, FeePaid, PackageIncomplete, PackageReady, Submitted, UnderReview, DocsRequested, Accepted, Rejected, Waitlisted, Cancelled, DeadlineMissed]
+        actor_id:
+          type: string
+          format: uuid
+        note:
+          type: string
+          default: ""
+
+    ApplicationResponse:
+      type: object
+      properties:
+        application_id:
+          type: string
+          format: uuid
+        learner_id:
+          type: string
+          format: uuid
+        programme_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [Draft, FeeOutstanding, FeePaid, PackageIncomplete, PackageReady, Submitted, UnderReview, DocsRequested, Accepted, Rejected, Waitlisted, Cancelled, DeadlineMissed]
+        fee_amount:
+          type: string
+        submission_timestamp:
+          type: string
+          format: date-time
+          nullable: true
+        acknowledgement_reference:
+          type: string

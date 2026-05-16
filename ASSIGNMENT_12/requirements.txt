@@ -1,0 +1,6 @@
+# Assignment 12 — UniMatch REST API
+fastapi>=0.110,<1
+uvicorn[standard]>=0.27,<1
+httpx>=0.27,<1
+pytest>=8,<10
+pydantic>=2,<3
