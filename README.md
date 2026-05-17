@@ -45,6 +45,18 @@ UniMatch is a **centralized decision-support and application coordination platfo
 - Domain classes implemented from `CLASS_DIAGRAM.md` under `src/unimatch/`
 - All six creational patterns under `creational_patterns/` with unit tests under `tests/`
 
+### Assignment 12: Service Layer & REST API
+- Service layer with business logic for learners, programmes, and applications
+- FastAPI REST API with 26 endpoints across 3 entities
+- OpenAPI YAML documentation with Swagger UI integration
+- Comprehensive unit and integration tests (73 tests passing)
+
+### Assignment 13: CI/CD with GitHub Actions
+- Branch protection rules for main branch (requires PR reviews and passing tests)
+- GitHub Actions CI/CD pipeline for automated testing
+- Release artifact generation (Python wheel package)
+- Automated quality control and deployment workflow
+
 ---
 
 ## Project Documents
@@ -65,6 +77,14 @@ UniMatch is a **centralized decision-support and application coordination platfo
 
 ### Assignment 6
 - [Agile User Stories, Backlog & Sprint Plan – ASSIGNMENT 6 AGILE PLAN.md](ASSIGNMENT%206%20AGILE%20PLAN.md)
+
+### Assignment 12
+- [Service Layer & REST API – ASSIGNMENT_12/README.md](ASSIGNMENT_12/README.md)
+- [API Documentation – ASSIGNMENT_12/docs/README.md](ASSIGNMENT_12/docs/README.md)
+
+### Assignment 13
+- [Branch Protection Rules – PROTECTION.md](PROTECTION.md)
+- [CI/CD Pipeline – .github/workflows/ci.yml](.github/workflows/ci.yml)
 
 ### Supporting
 - [Functional Requirements – SYSTEM_REQUIREMENTS (Functional Section).md](SYSTEM_REQUIREMENTS%20(Functional%20Section).md)
@@ -146,3 +166,67 @@ All Sprint 1 issues are assigned to @Mabotse-Mosima.
 `python -m pytest --cov=unimatch --cov=creational_patterns --cov-report=term-missing`
 
 For an HTML coverage report, add `--cov-report=html` and open `htmlcov/index.html`.
+
+---
+
+## Running Tests Locally
+
+### Assignment 12 Tests (Service Layer & API)
+
+```bash
+cd ASSIGNMENT_12
+python -m pip install -r requirements.txt
+python -m pytest tests/ -v
+```
+
+Expected: **73 passed** (service unit tests + API integration tests).
+
+### Assignment 10 Tests (Domain Model & Patterns)
+
+```bash
+python -m pip install -r requirements.txt
+python -m pytest --cov=unimatch --cov=creational_patterns --cov-report=term-missing
+```
+
+For HTML coverage report: `python -m pytest --cov=unimatch --cov=creational_patterns --cov-report=html`
+
+---
+
+## CI/CD Pipeline (Assignment 13)
+
+### How It Works
+
+The project uses GitHub Actions for continuous integration and deployment:
+
+1. **Trigger**: Runs on every push to any branch and pull request to `main`
+2. **Test Job**: 
+   - Sets up Python 3.11 environment
+   - Installs dependencies from `ASSIGNMENT_12/requirements.txt`
+   - Runs all tests using pytest
+   - Uploads test results as artifacts
+3. **Build Job** (only on main branch):
+   - Builds Python wheel package
+   - Uploads release artifact (retained for 30 days)
+
+### Branch Protection Rules
+
+The `main` branch is protected with the following rules:
+
+- **Require pull request reviews**: At least 1 approval before merging
+- **Require status checks to pass**: CI workflow must succeed
+- **Disallow direct pushes**: All changes must go through PRs
+- **Require branches to be up to date**: PR must be based on latest main
+
+These rules ensure code quality and prevent buggy code from reaching the main branch.
+
+### PR Workflow
+
+1. Create a new branch from `main`
+2. Make changes and commit
+3. Push branch and create pull request
+4. CI pipeline runs automatically
+5. Tests must pass before merge is allowed
+6. Review and approve PR
+7. Merge to `main` triggers artifact generation
+
+See [PROTECTION.md](PROTECTION.md) for detailed explanation of branch protection rules.
