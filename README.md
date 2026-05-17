@@ -230,3 +230,23 @@ These rules ensure code quality and prevent buggy code from reaching the main br
 7. Merge to `main` triggers artifact generation
 
 See [PROTECTION.md](PROTECTION.md) for detailed explanation of branch protection rules.
+
+---
+
+## CI/CD Screenshots
+
+![CI/CD Pipeline - Workflow Overview](screenshot/Test%20Automation%20(1).png)
+
+![CI/CD Pipeline - Test Results](screenshot/Test%20Automation%20(2).png)
+
+![CI/CD Pipeline - Successful Tests](screenshot/Test%20Automation%20(3).png)
+
+![CI/CD Pipeline - Artifact Generation](screenshot/Test%20Automation%20(4).png)
+
+![CI/CD Pipeline - Build Artifact](screenshot/Test%20Automation%20(5).png)
+
+![CI/CD Pipeline - Completed Workflow](screenshot/Test%20Automation%20(6).png)
+
+![CI/CD Pipeline - Generated Artifact](screenshot/Artifact%20screenshot%20(1).png)
+
+![CI/CD Pipeline - Artifact Details](screenshot/Artifact%20screenshot%20(2).png)
