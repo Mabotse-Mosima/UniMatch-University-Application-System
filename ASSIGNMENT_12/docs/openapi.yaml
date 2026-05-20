@@ -185,6 +185,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApsResponse'
+              example:
+                learner_id: "00000000-0000-0000-0000-000000000001"
+                aps_score: 32
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -246,6 +249,15 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CreateProgrammeRequest'
+            example:
+              university_id: "00000000-0000-0000-0000-000000000010"
+              name: "BSc Computer Science"
+              faculty: "Science"
+              minimum_aps: 28
+              application_deadline: "2025-09-30"
+              application_fee: "200.00"
+              required_documents: ["ID", "Matric Certificate"]
+              published_by: "00000000-0000-0000-0000-000000000001"'
       responses:
         '201':
           description: Programme created
@@ -358,6 +370,8 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ExtendDeadlineRequest'
+            example:
+              new_deadline: "2025-11-30"
       responses:
         '200':
           description: Programme with updated deadline
@@ -401,6 +415,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/EligibilityResponse'
+              example:
+                programme_id: "00000000-0000-0000-0000-000000000020"
+                learner_aps: 32
+                minimum_aps: 28
+                eligibility: "Guaranteed"
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -440,6 +459,10 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CreateApplicationRequest'
+            example:
+              learner_id: "00000000-0000-0000-0000-000000000001"
+              programme_id: "00000000-0000-0000-0000-000000000020"
+              fee_amount: "200.00"
       responses:
         '201':
           description: Application created
@@ -531,6 +554,10 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdateStatusRequest'
+            example:
+              new_status: "UnderReview"
+              actor_id: "00000000-0000-0000-0000-000000000001"
+              note: "Application reviewed by admissions office"
       responses:
         '200':
           description: Updated application
