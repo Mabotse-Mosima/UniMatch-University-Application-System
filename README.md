@@ -1,5 +1,10 @@
 # UniMatch – School-Based University Application & Eligibility System
 
+![GitHub stars](https://img.shields.io/github/stars/Mabotse-Mosima/UniMatch-University-Application-System)
+![GitHub forks](https://img.shields.io/github/forks/Mabotse-Mosima/UniMatch-University-Application-System)
+![GitHub contributors](https://img.shields.io/github/contributors/Mabotse-Mosima/UniMatch-University-Application-System)
+![License](https://img.shields.io/github/license/Mabotse-Mosima/UniMatch-University-Application-System)
+
 UniMatch is a **centralized decision-support and application coordination platform** for South African high schools. It connects **learners**, **school staff** (teachers, counselors, administrators), **parents/guardians**, **university admissions offices**, and **district / Department of Education** stakeholders so that programme information, eligibility guidance, **secure fee payment** (via an external gateway), application packages, and outcomes are managed in one place.
 
 - Staff manage academic data, import marks, run **AI/rule-based** eligibility recommendations, conduct guidance sessions, and upload recommendation letters.
