@@ -56,6 +56,16 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/LearnerResponse'
+                  example:
+                - learner_id: "00000000-0000-0000-0000-000000000001"
+                  full_name: "Thabo Nkosi"
+                  school_id_number: "2024-0001"
+                  grade: 12
+                  status: "MarksRecorded"
+                  counselor_id: "00000000-0000-0000-0000-000000000002"
+                  school_id: "00000000-0000-0000-0000-000000000003"
+                  aps_score: 32
+                  mark_count: 6
 
     post:
       tags: [Learners]
@@ -234,6 +244,16 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ProgrammeResponse'
+                  example:
+                - programme_id: "00000000-0000-0000-0000-000000000010"
+                  university_id: "00000000-0000-0000-0000-000000000020"
+                  name: "BSc Computer Science"
+                  faculty: "Science"
+                  minimum_aps: 28
+                  application_deadline: "2025-09-30"
+                  application_fee: "200.00"
+                  status: "Published"
+                  is_active: true
 
     post:
       tags: [Programmes]
