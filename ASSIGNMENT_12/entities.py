@@ -53,6 +53,8 @@ class UserAccount:
         return bool(otp) and otp == self.mfa_secret
 
     def reset_password(self, new_password: str) -> None:
+        if len(new_password) < 8:
+            raise ValueError("Password must be at least 8 characters")
         self.password_hash = new_password
         self.failed_attempts = 0
         self.locked_until = None
