@@ -305,6 +305,37 @@ class TestUniversityProgrammeService:
         programme_svc.create_programme(prog)
         assert programme_svc.check_eligibility(prog.programme_id, 20) == EligibilityEnum.NotEligible
 
+    def test_publish_programme_with_past_deadline_raises(self, programme_svc):
+        prog = _make_programme(deadline=date(2000, 1, 1))
+    programme_svc.create_programme(prog)
+
+    with pytest.raises(ValueError):
+        programme_svc.publish_programme(prog.programme_id)
+
+    def test_deactivate_draft_programme_raises(self, programme_svc):
+        prog = _make_programme()  # default is Draft
+    programme_svc.create_programme(prog)
+
+    with pytest.raises(ValueError):
+        programme_svc.deactivate_programme(prog.programme_id)
+
+
+    def test_delete_published_programme_raises(self, programme_svc):
+        prog = _make_programme()
+    programme_svc.create_programme(prog)
+    programme_svc.publish_programme(prog.programme_id)
+
+    with pytest.raises(Exception):  # replace with ForbiddenError if implemented later
+        programme_svc.delete_programme(prog.programme_id)
+
+
+    def test_update_programme_blank_name_raises(self, programme_svc):
+        prog = _make_programme()
+    programme_svc.create_programme(prog)
+
+    with pytest.raises(ValueError):
+        programme_svc.update_programme(prog.programme_id, name="   ")
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # ApplicationService tests
