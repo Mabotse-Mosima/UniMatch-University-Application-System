@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from decimal import Decimal
 from typing import Any
+import re
 from uuid import UUID, uuid4
 
 from enums import (
@@ -53,6 +54,15 @@ class UserAccount:
         return bool(otp) and otp == self.mfa_secret
 
     def reset_password(self, new_password: str) -> None:
+        if len(new_password) < 8:
+            raise ValueError("Password must contain at least 8 characters")
+
+        if not re.search(r"\d", new_password):
+            raise ValueError("Password must contain a number")
+
+        if not re.search(r"[A-Z]", new_password):
+            raise ValueError("Password must contain an uppercase letter")
+
         self.password_hash = new_password
         self.failed_attempts = 0
         self.locked_until = None
