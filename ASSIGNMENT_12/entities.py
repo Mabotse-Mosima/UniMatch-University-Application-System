@@ -53,10 +53,26 @@ class UserAccount:
         return bool(otp) and otp == self.mfa_secret
 
     def reset_password(self, new_password: str) -> None:
-        self.password_hash = new_password
-        self.failed_attempts = 0
-        self.locked_until = None
-        self.updated_at = _utcnow()
+
+    if len(new_password) < 8:
+        raise ValueError(
+            "Password must contain at least 8 characters"
+        )
+
+    if not re.search(r"\d", new_password):
+        raise ValueError(
+            "Password must contain a number"
+        )
+
+    if not re.search(r"[A-Z]", new_password):
+        raise ValueError(
+            "Password must contain an uppercase letter"
+        )
+
+    self.password_hash = new_password
+    self.failed_attempts = 0
+    self.locked_until = None
+    self.updated_at = _utcnow()
 
     def is_locked(self) -> bool:
         if self.failed_attempts >= 3:
