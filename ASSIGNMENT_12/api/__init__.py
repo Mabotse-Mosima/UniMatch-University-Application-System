@@ -51,6 +51,17 @@ from services import (
     UniversityProgrammeService,
 )
 
+# ────────────────────────────────────────────────────────────────────────────
+# Logging configuration
+# ────────────────────────────────────────────────────────────────────────────
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger("unimatch.api")
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Pydantic schemas (module level — required for correct JSON body binding)
 # ─────────────────────────────────────────────────────────────────────────────
@@ -216,6 +227,32 @@ def create_app() -> FastAPI:
         contact={"name": "UniMatch Team"},
         license_info={"name": "MIT"},
     )
+
+    # ────────────────────────────────────────────────────────────────────
+    # Request logging middleware
+    # Logs every endpoint call (INFO), 404 responses (WARNING),
+    # and unexpected exceptions (ERROR).
+    # ────────────────────────────────────────────────────────────────────
+    @fastapi_app.middleware("http")
+    async def log_requests(request, call_next):
+        logger.info("%s %s called", request.method, request.url.path)
+        try:
+            response = await call_next(request)
+        except Exception as exc:
+            logger.error(
+                "Unexpected exception on %s %s: %s",
+                request.method,
+                request.url.path,
+                exc,
+            )
+            raise
+        if response.status_code == 404:
+            logger.warning(
+                "404 Not Found: %s %s",
+                request.method,
+                request.url.path,
+            )
+        return response
 
     learner_repo = InMemoryLearnerProfileRepository()
     programme_repo = InMemoryUniversityProgrammeRepository()
