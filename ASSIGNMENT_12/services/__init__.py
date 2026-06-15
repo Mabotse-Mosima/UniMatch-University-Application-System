@@ -50,6 +50,11 @@ from enums import (
 class LearnerNotFoundError(Exception):
     """Raised when a LearnerProfile cannot be located."""
     def __init__(self, learner_id: UUID):
+        """Initialise the error.
+
+        Args:
+            learner_id: UUID of the learner that could not be found.
+        """
         super().__init__(f"Learner {learner_id} not found")
         self.learner_id = learner_id
 
@@ -57,6 +62,11 @@ class LearnerNotFoundError(Exception):
 class ProgrammeNotFoundError(Exception):
     """Raised when a UniversityProgramme cannot be located."""
     def __init__(self, programme_id: UUID):
+        """Initialise the error.
+
+        Args:
+            programme_id: UUID of the programme that could not be found.
+        """
         super().__init__(f"Programme {programme_id} not found")
         self.programme_id = programme_id
 
@@ -64,6 +74,11 @@ class ProgrammeNotFoundError(Exception):
 class ApplicationNotFoundError(Exception):
     """Raised when an Application cannot be located."""
     def __init__(self, application_id: UUID):
+        """Initialise the error.
+
+        Args:
+            application_id: UUID of the application that could not be found.
+        """
         super().__init__(f"Application {application_id} not found")
         self.application_id = application_id
 
@@ -73,6 +88,11 @@ class TooManyActiveApplicationsError(Exception):
     MAX = 5
 
     def __init__(self, learner_id: UUID):
+        """Initialise the error.
+
+        Args:
+            learner_id: UUID of the learner who exceeded the active-application cap.
+        """
         super().__init__(
             f"Learner {learner_id} already has {self.MAX} active applications. "
             "Cancel one before applying again."
@@ -83,6 +103,12 @@ class TooManyActiveApplicationsError(Exception):
 class DuplicateApplicationError(Exception):
     """Raised when a learner tries to apply to the same programme twice."""
     def __init__(self, learner_id: UUID, programme_id: UUID):
+        """Initialise the error.
+
+        Args:
+            learner_id: UUID of the learner.
+            programme_id: UUID of the programme they already applied to.
+        """
         super().__init__(
             f"Learner {learner_id} already has an active application for programme {programme_id}"
         )
@@ -91,12 +117,23 @@ class DuplicateApplicationError(Exception):
 class ProgrammeNotActiveError(Exception):
     """Raised when trying to apply to a programme that is not published/active."""
     def __init__(self, programme_id: UUID):
+        """Initialise the error.
+
+        Args:
+            programme_id: UUID of the programme that is not currently active.
+        """
         super().__init__(f"Programme {programme_id} is not currently accepting applications")
 
 
 class IneligibleLearnerError(Exception):
     """Raised when a learner's APS score is below the programme minimum."""
     def __init__(self, learner_aps: int, minimum_aps: int):
+        """Initialise the error.
+
+        Args:
+            learner_aps: The learner's calculated APS score.
+            minimum_aps: The programme's required minimum APS.
+        """
         super().__init__(
             f"Learner APS {learner_aps} is below the programme minimum of {minimum_aps}"
         )
@@ -105,6 +142,12 @@ class IneligibleLearnerError(Exception):
 class InvalidStatusTransitionError(Exception):
     """Raised when an application status update is not allowed."""
     def __init__(self, current: ApplicationStatusEnum, requested: ApplicationStatusEnum):
+        """Initialise the error.
+
+        Args:
+            current: The application's present status.
+            requested: The status that was requested but not allowed.
+        """
         super().__init__(f"Cannot transition application from {current.value} to {requested.value}")
 
 
@@ -113,27 +156,57 @@ class InvalidStatusTransitionError(Exception):
 # ---------------------------------------------------------------------------
 
 class _LearnerRepo:
-    def find_by_id(self, lid: UUID) -> Optional[LearnerProfile]: ...
-    def find_all(self) -> List[LearnerProfile]: ...
-    def save(self, p: LearnerProfile) -> None: ...
-    def delete(self, lid: UUID) -> None: ...
+    def find_by_id(self, lid: UUID) -> Optional[LearnerProfile]:
+        """Return a LearnerProfile by ID, or None if not found."""
+        ...
+    def find_all(self) -> List[LearnerProfile]:
+        """Return all stored LearnerProfile records."""
+        ...
+    def save(self, p: LearnerProfile) -> None:
+        """Persist (insert or update) a LearnerProfile."""
+        ...
+    def delete(self, lid: UUID) -> None:
+        """Remove the LearnerProfile with the given ID."""
+        ...
 
 
 class _ProgrammeRepo:
-    def find_by_id(self, pid: UUID) -> Optional[UniversityProgramme]: ...
-    def find_all(self) -> List[UniversityProgramme]: ...
-    def save(self, p: UniversityProgramme) -> None: ...
-    def delete(self, pid: UUID) -> None: ...
-    def find_published(self) -> List[UniversityProgramme]: ...
+    def find_by_id(self, pid: UUID) -> Optional[UniversityProgramme]:
+        """Return a UniversityProgramme by ID, or None if not found."""
+        ...
+    def find_all(self) -> List[UniversityProgramme]:
+        """Return all stored UniversityProgramme records."""
+        ...
+    def save(self, p: UniversityProgramme) -> None:
+        """Persist (insert or update) a UniversityProgramme."""
+        ...
+    def delete(self, pid: UUID) -> None:
+        """Remove the UniversityProgramme with the given ID."""
+        ...
+    def find_published(self) -> List[UniversityProgramme]:
+        """Return all programmes whose status is Published."""
+        ...
 
 
 class _ApplicationRepo:
-    def find_by_id(self, aid: UUID) -> Optional[Application]: ...
-    def find_all(self) -> List[Application]: ...
-    def find_by_learner(self, lid: UUID) -> List[Application]: ...
-    def find_by_programme(self, pid: UUID) -> List[Application]: ...
-    def save(self, a: Application) -> None: ...
-    def delete(self, aid: UUID) -> None: ...
+    def find_by_id(self, aid: UUID) -> Optional[Application]:
+        """Return an Application by ID, or None if not found."""
+        ...
+    def find_all(self) -> List[Application]:
+        """Return all stored Application records."""
+        ...
+    def find_by_learner(self, lid: UUID) -> List[Application]:
+        """Return all applications belonging to a learner."""
+        ...
+    def find_by_programme(self, pid: UUID) -> List[Application]:
+        """Return all applications for a programme."""
+        ...
+    def save(self, a: Application) -> None:
+        """Persist (insert or update) an Application."""
+        ...
+    def delete(self, aid: UUID) -> None:
+        """Remove the Application with the given ID."""
+        ...
 
 
 # ---------------------------------------------------------------------------
@@ -157,23 +230,56 @@ class LearnerProfileService:
     # ── CRUD ────────────────────────────────────────────────────────────────
 
     def create_profile(self, profile: LearnerProfile) -> LearnerProfile:
-        """Persist a new learner profile."""
+        """Persist a new learner profile.
+
+        Args:
+            profile: The LearnerProfile entity to store.
+
+        Returns:
+            The same profile instance after saving.
+        """
         self.learner_repo.save(profile)
         return profile
 
     def get_profile(self, learner_id: UUID) -> LearnerProfile:
-        """Return a learner profile or raise :class:`LearnerNotFoundError`."""
+        """Return a learner profile by ID.
+
+        Args:
+            learner_id: UUID of the learner whose profile to retrieve.
+
+        Returns:
+            The matching LearnerProfile.
+
+        Raises:
+            LearnerNotFoundError: If no profile with that ID exists.
+        """
         profile = self.learner_repo.find_by_id(learner_id)
         if profile is None:
             raise LearnerNotFoundError(learner_id)
         return profile
 
     def list_profiles(self) -> List[LearnerProfile]:
-        """Return all learner profiles."""
+        """Return all learner profiles.
+
+        Returns:
+            List of every stored LearnerProfile.
+        """
         return self.learner_repo.find_all()
 
     def update_profile(self, learner_id: UUID, **kwargs) -> LearnerProfile:
-        """Update allowed scalar fields on an existing profile."""
+        """Update allowed scalar fields on an existing profile.
+
+        Args:
+            learner_id: UUID of the profile to update.
+            **kwargs: Key/value pairs from the allowed set
+                (full_name, grade, school_id_number).
+
+        Returns:
+            The updated LearnerProfile.
+
+        Raises:
+            LearnerNotFoundError: If the profile does not exist.
+        """
         profile = self.get_profile(learner_id)
         allowed = {"full_name", "grade", "school_id_number"}
         for key, value in kwargs.items():
@@ -183,14 +289,33 @@ class LearnerProfileService:
         return profile
 
     def delete_profile(self, learner_id: UUID) -> None:
-        """Remove a learner profile. Raises if it does not exist."""
+        """Remove a learner profile.
+
+        Args:
+            learner_id: UUID of the profile to delete.
+
+        Raises:
+            LearnerNotFoundError: If no profile with that ID exists.
+        """
         self.get_profile(learner_id)  # ensures 404 if missing
         self.learner_repo.delete(learner_id)
 
     # ── Domain operations ────────────────────────────────────────────────────
 
     def add_mark(self, learner_id: UUID, mark: Mark) -> LearnerProfile:
-        """Append a validated mark to the learner's profile."""
+        """Append a validated mark to the learner's profile.
+
+        Args:
+            learner_id: UUID of the learner receiving the mark.
+            mark: The Mark entity to append.
+
+        Returns:
+            The updated LearnerProfile with the new mark appended.
+
+        Raises:
+            ValueError: If the mark score is outside the 0–100 range.
+            LearnerNotFoundError: If no profile with that ID exists.
+        """
         if not mark.is_valid():
             raise ValueError(f"Mark score {mark.score} is out of the valid 0–100 range")
         profile = self.get_profile(learner_id)
@@ -200,12 +325,32 @@ class LearnerProfileService:
         return profile
 
     def get_aps_score(self, learner_id: UUID) -> int:
-        """Calculate and return the current APS score for a learner."""
+        """Calculate and return the current APS score for a learner.
+
+        Args:
+            learner_id: UUID of the learner.
+
+        Returns:
+            The learner's APS score as an integer.
+
+        Raises:
+            LearnerNotFoundError: If no profile with that ID exists.
+        """
         profile = self.get_profile(learner_id)
         return profile.get_aps_score()
 
     def deactivate_profile(self, learner_id: UUID) -> LearnerProfile:
-        """Mark the profile inactive and cancel any open applications."""
+        """Mark the profile inactive and cancel any open applications.
+
+        Args:
+            learner_id: UUID of the learner to deactivate.
+
+        Returns:
+            The updated (inactive) LearnerProfile.
+
+        Raises:
+            LearnerNotFoundError: If no profile with that ID exists.
+        """
         profile = self.get_profile(learner_id)
         profile.deactivate()
 
@@ -244,27 +389,65 @@ class UniversityProgrammeService:
     # ── CRUD ────────────────────────────────────────────────────────────────
 
     def create_programme(self, programme: UniversityProgramme) -> UniversityProgramme:
-        """Persist a new programme in Draft status."""
+        """Persist a new programme in Draft status.
+
+        Args:
+            programme: The UniversityProgramme entity to store.
+
+        Returns:
+            The same programme instance after saving.
+        """
         self.programme_repo.save(programme)
         return programme
 
     def get_programme(self, programme_id: UUID) -> UniversityProgramme:
-        """Return a programme or raise :class:`ProgrammeNotFoundError`."""
+        """Return a programme by ID.
+
+        Args:
+            programme_id: UUID of the programme to retrieve.
+
+        Returns:
+            The matching UniversityProgramme.
+
+        Raises:
+            ProgrammeNotFoundError: If no programme with that ID exists.
+        """
         programme = self.programme_repo.find_by_id(programme_id)
         if programme is None:
             raise ProgrammeNotFoundError(programme_id)
         return programme
 
     def list_programmes(self) -> List[UniversityProgramme]:
-        """Return all programmes regardless of status."""
+        """Return all programmes regardless of status.
+
+        Returns:
+            List of every stored UniversityProgramme.
+        """
         return self.programme_repo.find_all()
 
     def list_published_programmes(self) -> List[UniversityProgramme]:
-        """Return only programmes that are currently published and not expired."""
+        """Return only programmes that are currently published and not expired.
+
+        Returns:
+            List of published, non-expired UniversityProgramme records.
+        """
         return [p for p in self.programme_repo.find_published() if not p.is_expired()]
 
     def update_programme(self, programme_id: UUID, **kwargs) -> UniversityProgramme:
-        """Update allowed scalar fields on an existing programme."""
+        """Update allowed scalar fields on an existing programme.
+
+        Args:
+            programme_id: UUID of the programme to update.
+            **kwargs: Key/value pairs from the allowed set
+                (name, faculty, minimum_aps, application_fee,
+                required_documents).
+
+        Returns:
+            The updated UniversityProgramme.
+
+        Raises:
+            ProgrammeNotFoundError: If the programme does not exist.
+        """
         programme = self.get_programme(programme_id)
         allowed = {"name", "faculty", "minimum_aps", "application_fee", "required_documents"}
         for key, value in kwargs.items():
@@ -274,7 +457,14 @@ class UniversityProgrammeService:
         return programme
 
     def delete_programme(self, programme_id: UUID) -> None:
-        """Remove a programme. Raises if it does not exist."""
+        """Remove a programme.
+
+        Args:
+            programme_id: UUID of the programme to delete.
+
+        Raises:
+            ProgrammeNotFoundError: If no programme with that ID exists.
+        """
         self.get_programme(programme_id)
         self.programme_repo.delete(programme_id)
 
@@ -291,7 +481,17 @@ class UniversityProgrammeService:
         return programme
 
     def deactivate_programme(self, programme_id: UUID) -> UniversityProgramme:
-        """Take a programme offline."""
+        """Take a programme offline.
+
+        Args:
+            programme_id: UUID of the programme to deactivate.
+
+        Returns:
+            The updated (inactive) UniversityProgramme.
+
+        Raises:
+            ProgrammeNotFoundError: If the programme does not exist.
+        """
         programme = self.get_programme(programme_id)
         programme.deactivate()
         self.programme_repo.save(programme)
@@ -305,7 +505,19 @@ class UniversityProgrammeService:
         return programme
 
     def check_eligibility(self, programme_id: UUID, learner_aps: int) -> EligibilityEnum:
-        """Return an eligibility category for a learner based on APS only."""
+        """Return an eligibility category for a learner based on APS only.
+
+        Args:
+            programme_id: UUID of the programme to check against.
+            learner_aps: The learner's calculated APS score.
+
+        Returns:
+            An EligibilityEnum value (Guaranteed, Likely, Borderline,
+            or NotEligible).
+
+        Raises:
+            ProgrammeNotFoundError: If the programme does not exist.
+        """
         programme = self.get_programme(programme_id)
         diff = learner_aps - programme.minimum_aps
         if diff >= 4:
@@ -351,25 +563,58 @@ class ApplicationService:
     # ── CRUD ────────────────────────────────────────────────────────────────
 
     def get_application(self, application_id: UUID) -> Application:
-        """Return an application or raise :class:`ApplicationNotFoundError`."""
+        """Return an application by ID.
+
+        Args:
+            application_id: UUID of the application to retrieve.
+
+        Returns:
+            The matching Application.
+
+        Raises:
+            ApplicationNotFoundError: If no application with that ID exists.
+        """
         app = self.application_repo.find_by_id(application_id)
         if app is None:
             raise ApplicationNotFoundError(application_id)
         return app
 
     def list_applications(self) -> List[Application]:
-        """Return all applications in the system."""
+        """Return all applications in the system.
+
+        Returns:
+            List of every stored Application record.
+        """
         return self.application_repo.find_all()
 
     def list_for_learner(self, learner_id: UUID) -> List[Application]:
-        """Return all applications belonging to a specific learner."""
+        """Return all applications belonging to a specific learner.
+
+        Args:
+            learner_id: UUID of the learner whose applications to retrieve.
+
+        Returns:
+            List of Application records for that learner.
+
+        Raises:
+            LearnerNotFoundError: If the learner does not exist.
+        """
         # Confirm learner exists
         if self.learner_repo.find_by_id(learner_id) is None:
             raise LearnerNotFoundError(learner_id)
         return self.application_repo.find_by_learner(learner_id)
 
     def delete_application(self, application_id: UUID) -> None:
-        """Hard-delete an application record. Prefer :meth:`cancel_application` for soft cancellation."""
+        """Hard-delete an application record.
+
+        Prefer :meth:`cancel_application` for reversible soft cancellation.
+
+        Args:
+            application_id: UUID of the application to delete.
+
+        Raises:
+            ApplicationNotFoundError: If no application with that ID exists.
+        """
         self.get_application(application_id)
         self.application_repo.delete(application_id)
 
