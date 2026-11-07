@@ -1,382 +1,360 @@
-# UniMatch – School-Based University Application & Eligibility System
+# UniMatch — School-Based University Eligibility Recommender
 
-![GitHub stars](https://img.shields.io/github/stars/Mabotse-Mosima/UniMatch-University-Application-System)
-![GitHub forks](https://img.shields.io/github/forks/Mabotse-Mosima/UniMatch-University-Application-System)
-![GitHub contributors](https://img.shields.io/github/contributors/Mabotse-Mosima/UniMatch-University-Application-System)
-![License](https://img.shields.io/github/license/Mabotse-Mosima/UniMatch-University-Application-System)
-
-UniMatch is a **centralized decision-support and application coordination platform** for South African high schools. It connects **learners**, **school staff** (teachers, counselors, administrators), **parents/guardians**, **university admissions offices**, and **district / Department of Education** stakeholders so that programme information, eligibility guidance, **secure fee payment** (via an external gateway), application packages, and outcomes are managed in one place.
-
-- Staff manage academic data, import marks, run **AI/rule-based** eligibility recommendations, conduct guidance sessions, and upload recommendation letters.
-- **Learners** authenticate to select programmes, complete fee steps, review packages, **submit** applications, and **track** status (Assignment 5 vision).
-- **Universities** publish requirements and record admission decisions in UniMatch’s orchestration layer.
-- **District/DoE** access **anonymized** analytics only.
-
-**Authoritative Assignment 5 artefacts:** [Use_Case_Specifications.md](Use_Case_Specifications.md), [TEST_CASES.md](TEST_CASES.md), [ASSIGNMENT5_REFLECTION.md](ASSIGNMENT5_REFLECTION.md).  
-**System specification (v2.0, aligned):** [SPECIFICATION.md](SPECIFICATION.md).
+**CPUT Postgraduate Diploma in ICT — Capstone Project**
+*Implementation, Testing and Evaluation Phase*
 
 ---
 
-## Project Overview
+## Project title
 
-**Domain**: School administration, higher-education guidance, and multi-party application coordination (South African context).  
-**Problem**: Fragmented tools, missed deadlines, unclear eligibility, fraud-prone fee handling, and weak visibility for schools and government.  
-**Solution**: UniMatch coordinates applications end-to-end while delegating card processing to a **certified payment gateway** and preserving POPIA-oriented design for district reporting.
+Design and Development of UniMatch: School-Based University Eligibility Recommender for South African Matriculants
 
----
+## Problem being addressed
 
-## Getting Started
+South African Grade 11 and Grade 12 learners often lack clear, accessible guidance on which university programmes they are eligible to apply for. Eligibility depends on the Admission Point Score (APS) — calculated from a learner's NSC subject marks using a standardised 7-point scale — which many learners find difficult to interpret. UniMatch is a school-based decision-support system that calculates each learner's APS, compares it against university programme admission requirements, and classifies eligibility so that learners and their Life Orientation teachers or counsellors can make informed guidance decisions.
 
-### Prerequisites
+## Intended users and pilot scope
 
-- **Python 3.11+** - For running the service layer and API
-- **Git** - For version control
-- **GitHub account** - For contributing
+The initial pilot targets a single South African school environment. The primary users are:
 
-### Installation
+- **Grade 11 and Grade 12 learners** — view their eligibility results and manage applications
+- **Life Orientation teachers and school counsellors** — record marks, run eligibility checks, guide learners
+- **School administrators** — manage learner profiles and programme information
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/Mabotse-Mosima/UniMatch-University-Application-System.git
-   cd UniMatch-University-Application-System
-   ```
-
-2. **Install dependencies**
-   ```bash
-   # For Assignment 12 (Service Layer & API)
-   cd ASSIGNMENT_12
-   python -m pip install -r requirements.txt
-   
-   # For Assignment 10 (Domain Model & Patterns)
-   python -m pip install -r requirements.txt
-   ```
-
-3. **Run tests**
-   ```bash
-   # Assignment 12 tests
-   cd ASSIGNMENT_12
-   python -m pytest tests/ -v
-   
-   # Assignment 10 tests
-   python -m pytest --cov=unimatch --cov=creational_patterns --cov-report=term-missing
-   ```
-
-4. **Run the API (Assignment 12)**
-   ```bash
-   cd ASSIGNMENT_12
-   uvicorn api:app --reload
-   ```
-   API available at: http://localhost:8000/docs
-
-### Quick Start for Contributors
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/your-feature`
-3. Make changes and test
-4. Submit a pull request
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+This is a limited pilot. It is not a national university admissions platform and does not integrate with live university systems.
 
 ---
 
-## Features for Contribution
+## Implementation status
 
-We welcome contributions in the following areas. These are great starting points for new contributors:
+This table describes the current codebase. A feature being implemented does not
+mean that its production deployment or external integrations have been verified.
 
-### Good First Issues (Beginner-Friendly)
-
-| Feature | Description | Difficulty | Labels |
-|---------|-------------|------------|--------|
-| Add unit tests for existing functions | Improve test coverage for service layer | Easy | `good-first-issue`, `testing` |
-| Improve documentation and code comments | Add docstrings and inline comments | Easy | `good-first-issue`, `documentation` |
-| Fix minor UI bugs | Small UI fixes and improvements | Easy | `good-first-issue`, `bug` |
-| Add error handling | Implement try-catch blocks and validation | Easy | `good-first-issue` |
-| Add logging statements | Add logging for debugging and monitoring | Easy | `good-first-issue` |
-| Update README with examples | Add usage examples and tutorials | Easy | `good-first-issue`, `documentation` |
-| Create Docker configuration | Add Dockerfile and docker-compose.yml | Easy | `good-first-issue`, `infrastructure` |
-| Add API documentation examples | Expand OpenAPI documentation | Easy | `good-first-issue`, `documentation` |
-
-### Feature Requests (Intermediate/Advanced)
-
-| Feature | Description | Difficulty | Labels |
-|---------|-------------|------------|--------|
-| Implement caching layer | Add Redis for session and query caching | Medium | `feature-request`, `performance` |
-| Build mobile applications | iOS and Android apps for learners | Hard | `feature-request`, `mobile` |
-| Integrate payment gateway | Secure payment processing integration | Medium | `feature-request`, `integration` |
-| Develop analytics dashboard | Real-time dashboards and reporting | Medium | `feature-request` |
-| Create recommendation engine | ML-based programme recommendations | Hard | `feature-request`, `ai-ml` |
-| Build notification system | Email, SMS, and in-app notifications | Medium | `feature-request` |
-| Implement real-time features | WebSocket support for live updates | Medium | `feature-request` |
-| Add machine learning capabilities | Predictive analytics and AI features | Hard | `feature-request`, `ai-ml` |
-
-### How to Contribute
-
-1. **Pick an issue**: Browse issues labeled `good-first-issue` or `feature-request`
-2. **Comment to claim**: Add a comment to avoid duplicate work
-3. **Create a branch**: `git checkout -b feature/your-feature-name`
-4. **Make changes**: Follow coding standards in CONTRIBUTING.md
-5. **Test thoroughly**: Ensure all tests pass
-6. **Submit PR**: Create a pull request with clear description
-
-See [ROADMAP.md](ROADMAP.md) for the complete project roadmap and future plans.
-
----
-
-## Assignment Progress
-
-### Assignment 3: System Specification & Architecture
-- System specification (**updated to v2.0** for Assignment 5 alignment)
-- C4 architecture (Context, Container, Component, Code) — see **ARCHITECTURE.md** §1.1 for extended actors
-- Technical stack: React, Node.js/Express, PostgreSQL
-
-### Assignment 4: Stakeholder & System Requirements
-- Stakeholder analysis and System Requirements Document (SRD v2.0)
-- Functional and non-functional requirements with traceability to tests
-
-### Assignment 5: Use Cases & Tests
-- UML-style use case diagram (Mermaid) and detailed specifications
-- Functional and non-functional test cases (including payment security and performance)
-- Reflection on requirements-to-use-case-to-test traceability
-
-### Assignment 6: Agile Planning
-- User stories, product backlog, and Sprint 1 plan (Scrum roles and GitHub tooling)
-- Traceability from stories to requirements, use cases, and tests
-- Reflection on backlog prioritisation and sprint scope
-
-### Assignment 10: From Class Diagrams to Code
-- Domain classes implemented from `CLASS_DIAGRAM.md` under `src/unimatch/`
-- All six creational patterns under `creational_patterns/` with unit tests under `tests/`
-
-### Assignment 12: Service Layer & REST API
-- Service layer with business logic for learners, programmes, and applications
-- FastAPI REST API with 26 endpoints across 3 entities
-- OpenAPI YAML documentation with Swagger UI integration
-- Comprehensive unit and integration tests (73 tests passing)
-
-### Assignment 13: CI/CD with GitHub Actions
-- Branch protection rules for main branch (requires PR reviews and passing tests)
-- GitHub Actions CI/CD pipeline for automated testing
-- Release artifact generation (Python wheel package)
-- Automated quality control and deployment workflow
-
----
-
-## Project Documents
-
-### Assignment 3
-- [System Specification – SPECIFICATION.md](SPECIFICATION.md) (v2.0)
-- [Architecture – ARCHITECTURE.md](ARCHITECTURE.md) (v2.0 introduction)
-
-### Assignment 4
-- [Stakeholder Analysis – STAKEHOLDER_ANALYSIS.md](STAKEHOLDER_ANALYSIS.md)
-- [System Requirements – SYSTEM_REQUIREMENTS_COMPLETE.md](SYSTEM_REQUIREMENTS_COMPLETE.md)
-- [Assignment 4 Reflection – ASSIGNMENT_4_REFLECTION.md](ASSIGNMENT_4_REFLECTION.md)
-
-### Assignment 5
-- [Use Case Specifications – Use_Case_Specifications.md](Use_Case_Specifications.md)
-- [Test Cases – TEST_CASES.md](TEST_CASES.md)
-- [Assignment 5 Reflection – ASSIGNMENT5_REFLECTION.md](ASSIGNMENT5_REFLECTION.md)
-
-### Assignment 6
-- [Agile User Stories, Backlog & Sprint Plan – ASSIGNMENT 6 AGILE PLAN.md](ASSIGNMENT%206%20AGILE%20PLAN.md)
-
-### Assignment 12
-- [Service Layer & REST API – ASSIGNMENT_12/README.md](ASSIGNMENT_12/README.md)
-- [API Documentation – ASSIGNMENT_12/docs/README.md](ASSIGNMENT_12/docs/README.md)
-
-### Assignment 13
-- [Branch Protection Rules – PROTECTION.md](PROTECTION.md)
-- [CI/CD Pipeline – .github/workflows/ci.yml](.github/workflows/ci.yml)
-
-### Supporting
-- [Functional Requirements – SYSTEM_REQUIREMENTS (Functional Section).md](SYSTEM_REQUIREMENTS%20(Functional%20Section).md)
-- [Non-Functional Requirements – SYSTEM_REQUIREMENTS (Non-Functional Section).md](SYSTEM_REQUIREMENTS%20(Non-Functional%20Section).md)
-
----
-
-## Planned Tech Stack
-
-- **Frontends**: React (TypeScript) — staff portal, learner portal, university admissions UI (separate apps or modules as needed)
-- **Backend**: Node.js with Express (RESTful API), RBAC, audit logging
-- **Database**: PostgreSQL
-- **Integrations**: Payment gateway (PCI scope minimized), email/SMS providers
-- **Deployment**: Cloud-hosted (HTTPS everywhere)
-
----
-
-- **Frontend**: React (TypeScript), responsive web dashboard
-- **Backend**: Node.js with Express (RESTful API)
-- **Database**: PostgreSQL (relational)
-- **Notifications**: Email-based deadline reminders (conceptual; may be mocked)
-- **Deployment**: Cloud-hosted (conceptual) with HTTPS access
-
-**Traceability:** Requirement IDs in **TEST_CASES.md** map to **SYSTEM_REQUIREMENTS_COMPLETE.md** (FR1–FR15, NFR1–NFR20). **SPECIFICATION.md** v2.0 describes the same product vision as **Use_Case_Specifications.md**. Implementation may follow **Phase 1 / Phase 2** in SPECIFICATION §1.4.
-
-## Project Board — Assignment 7
-
-This project uses a customised **Automated Kanban** board managed through GitHub Projects.
-View the live board: [UniMatch Project Board](https://github.com/users/Mabotse-Mosima/projects/6)
-
-### Column structure
-
-| Column | Purpose |
+| Feature | Status |
 |---|---|
-| Backlog | All issues not yet assigned to the current sprint |
-| To Do | Issues committed to the current sprint, ready to start |
-| In Progress | Actively being worked on |
-| Blocked | Work started but waiting on an external dependency |
-| In Review | Submitted deliverables pending feedback |
-| Testing | Implementation complete; acceptance criteria being verified against TEST_CASES.md |
-| Done | Definition of Done satisfied; issue closed and linked to sprint milestone |
+| APS calculation using the NSC 7-point scale | Implemented |
+| Top-6 subject rule for APS calculation | Implemented |
+| Eligibility classification: Guaranteed / Likely / Borderline / Not Eligible | Implemented |
+| Learner profile CRUD (create, read, update, delete) | Implemented |
+| Recording subject marks against a learner profile | Implemented |
+| University programme CRUD | Implemented |
+| Programme publication and deactivation (with deadline and status guards) | Implemented |
+| Application creation with duplicate-prevention and 5-application cap | Implemented |
+| Application cancellation and status transitions | Implemented |
+| Application status history recording | Implemented (entity layer) |
+| University application list, detail, and review decisions | Implemented; university ownership and role checks enforced |
+| Application submission | Guarded; returns HTTP 409 until payment, verified required documents, status, and deadline prerequisites are met |
+| Learner document upload and review | Implemented for the local prototype: PDF/DOC/DOCX validation, school-scoped access, persistent local files/metadata, and auditable human review; no malware scanner |
+| Payment confirmation | Not implemented; no gateway or trusted payment confirmation |
+| In-memory and PostgreSQL repository implementations | Implemented; PostgreSQL runtime not verified |
+| FastAPI REST API, authentication, and role checks | Implemented; deployment security not verified |
+| React/TypeScript frontend and API workflows | Implemented; complete browser-to-database flow not verified |
+| Semantic PDF/DOCX extraction, chunking, retrieval, and source metadata | Implemented; tests exist, live end-to-end use not verified |
+| Opt-in local OpenAI-compatible generation | Implemented; no configured/running provider verified |
+| PostgreSQL migrations and RAG persistence | Implemented; migrations unapplied and persistence unverified |
+| Automated backend and frontend tests/checks | Present; results depend on the current environment and must be run to verify |
 
-### Why Automated Kanban?
-Automated Kanban was selected because it auto-moves issues when opened (→ To Do) and
-closed (→ Done), eliminating manual card maintenance for a solo developer playing all
-three Scrum roles.
+### Partially implemented, unverified, and planned
 
-### Custom columns added
-- **Blocked**: Added to make external dependencies visible. WIP limit: 2 tasks.
-- **Testing**: Added to enforce the Definition of Done — coded ≠ done until tested.
-  WIP limit: 3 tasks.
-
-### Labels
-Every issue is labelled with MoSCoW priority (`must-have`, `should-have`, `could-have`),
-story points (`SP:2`, `SP:3`, `SP:5`, `SP:8`), and sprint (`sprint-1`, `sprint-2`, etc.).
-All Sprint 1 issues are assigned to @Mabotse-Mosima.
+- **Partially implemented:** RAG source retention stores extracted text passages and embeddings, but does not retain the uploaded original file. Source deletion removes it from future retrieval; past messages may retain answer text and cited passages.
+- **Partially implemented:** AI guidance uses published-programme sources and deterministic learner eligibility context. The local generative adapter is opt-in; extractive generation is the default when no provider is configured.
+- **Incomplete:** University admissions staff can review submitted applications, but the normal submission path remains blocked without payment confirmation. Local learner-document upload, storage, and human review are implemented; the PostgreSQL metadata migration is unapplied and unverified, and files are not virus-scanned. School administrators cannot make admission decisions.
+- **Prototype boundary:** Without `DATABASE_URL`, document metadata is stored in a local JSON file and document contents in `DOCUMENT_STORAGE_DIR` (default: `~/.unimatch/documents`). This local store is for a single API process, not multi-worker or production deployment.
+- **Unverified:** PostgreSQL-backed repositories, applied migration state, production deployment, local LLM availability, and full end-to-end frontend/API operation.
+- **Planned or incomplete:** printed report generation, admission-system integrations, email/SMS delivery, and other future platform integrations described in historical requirements.
+- APS and eligibility results remain the deterministic engine's output; guidance generation must not recalculate or override them.
 
 ---
 
-## Assignment 10: Implementation (code)
+## Technology stack
 
-**Language choice:** Python 3.10+ was used so the Assignment 9 `CLASS_DIAGRAM.md` entities and enums map cleanly to `dataclasses` and `Enum`, with a `src/` layout that matches common pytest packaging. The domain layer stays free of web-framework dependencies, which matches the documented future stack (React / Node) while still giving a verifiable object model for this coursework milestone.
-
-**Design alignment:** Core attributes, methods, and relationships follow `CLASS_DIAGRAM.md` (composition for `LearnerProfile`–`Mark` and `Application`–`StatusHistoryEntry`, aggregation-style handling for application documents, and separate service classes as in the diagram). `DOMAIN_MODEL.md` informed a few supporting enums (for example `ProfileStatusEnum`) where the class diagram references them without re-listing every literal.
-
-**Creational patterns (see `creational_patterns/`):**
-
-| Pattern | Rationale (brief) |
+| Component | Technology |
 |---|---|
-| Simple Factory | `VehicleFactory` centralizes choosing `Car` / `Bike` / `Truck` from one API. |
-| Factory Method | `PaymentProcessor` defers creation logic to `CreditCardProcessor` vs `PayPalProcessor`. |
-| Abstract Factory | `GUIFactory` returns a family-specific `Button` (`WindowsButton` vs `MacOSButton`). |
-| Builder | `PizzaBuilder` models many optional parts (`add_cheese`, `add_toppings`) with validation on `build()`. |
-| Prototype | `ShapeCache` stores configured `Circle` / `Rectangle` prototypes and returns clones. |
-| Singleton | `DatabaseConnection` is a process-wide single instance with a lock for thread-safe initialization. |
-
-**Tests and coverage:** From the repository root, install dev dependencies (`pip install -r requirements.txt`) then run:
-
-`python -m pytest --cov=unimatch --cov=creational_patterns --cov-report=term-missing`
-
-For an HTML coverage report, add `--cov-report=html` and open `htmlcov/index.html`.
+| Language | Python 3.12 |
+| API framework | FastAPI |
+| Data validation | Pydantic v2 |
+| API server | Uvicorn |
+| Testing | Pytest 8+ |
+| HTTP test client | httpx / FastAPI TestClient |
+| Persistence | In-memory by default; PostgreSQL via SQLAlchemy 2 and Alembic when configured |
+| Frontend | React, TypeScript, Vite |
+| Containerisation | Docker / docker-compose |
+| CI/CD | GitHub Actions |
 
 ---
 
-## Running Tests Locally
+## Architecture
 
-### Assignment 12 Tests (Service Layer & API)
+UniMatch uses a layered architecture:
+
+```
+src/unimatch/
+├── config.py            ← Typed environment configuration
+├── database.py          ← SQLAlchemy engine and session factory
+├── db_models.py         ← PostgreSQL persistence models for active API data
+├── entities.py          ← Domain entities (LearnerProfile, UniversityProgramme, Application, …)
+├── enums.py             ← Status enums (EligibilityEnum, ApplicationStatusEnum, …)
+├── status_history.py    ← Application status history entry
+├── domain_services.py   ← Domain-level services (ApsCalculator, EligibilityClassifier, …)
+├── api/
+│   └── __init__.py      ← FastAPI route handlers and Pydantic request/response schemas
+├── services/
+│   └── __init__.py      ← Application services (LearnerProfileService, UniversityProgrammeService, ApplicationService)
+├── repositories/
+│   ├── __init__.py      ← Abstract repository interfaces (ABCs)
+│   ├── inmemory.py      ← In-memory repository implementations
+│   └── postgres.py      ← PostgreSQL implementations for active API repositories
+└── main.py              ← Application entry point
+```
+
+The reviewed initial schema is in `migrations/versions/0001_initial.py`. It covers learners and marks, programmes, applications and status history, and scoring rules. School/counsellor and other external UUID references remain unlinked until their entities are introduced in a later phase.
+
+**Layer responsibilities:**
+
+- **Domain entities** (`entities.py`): Business objects with their own invariants and rules (e.g. `Mark.to_aps_points()`, `UniversityProgramme.publish()`).
+- **Application services** (`services/`): Orchestrate repository reads and writes, enforce cross-entity business rules (eligibility caps, duplicate prevention).
+- **Repositories** (`repositories/`): Abstract persistence interfaces, in-memory test implementations, and PostgreSQL implementations for active API resources.
+- **API** (`api/`): FastAPI route handlers translate HTTP requests into service calls and format responses.
+
+---
+
+## Repository structure
+
+```
+UniMatch-University-Application-System/
+├── README.md
+├── pyproject.toml
+├── requirements.txt
+├── Dockerfile
+├── docker-compose.yml
+├── src/
+│   └── unimatch/            ← Canonical application source
+├── tests/
+│   ├── api/                 ← API integration tests
+│   ├── services/            ← Service unit tests
+│   ├── test_domain_entities.py
+│   └── test_*.py            ← Design-pattern tests (historical academic evidence)
+├── docs/
+│   ├── architecture/        ← ARCHITECTURE.md, DOMAIN_MODEL.md, diagrams
+│   ├── requirements/        ← SPECIFICATION.md, system requirements, use cases
+│   ├── testing/             ← TEST_CASES.md, TRACEABILITY.md
+│   ├── design/
+│   └── academic-evidence/   ← Historical assignment submissions and screenshots
+└── .github/
+    └── workflows/
+        └── ci.yml
+```
+
+Historical academic artefacts (assignment submissions, reflections, screenshots, earlier implementations) are preserved under `docs/academic-evidence/` to serve as evidence of the project's development history.
+
+---
+
+## Prerequisites
+
+- Python 3.12 or later
+- Git
+
+For Docker deployment:
+- Docker Desktop
+
+---
+
+## Installation and environment setup
 
 ```bash
-cd ASSIGNMENT_12
-python -m pip install -r requirements.txt
+# 1. Clone the repository
+git clone https://github.com/Mabotse-Mosima/UniMatch-University-Application-System.git
+cd UniMatch-University-Application-System
+
+# 2. Create and activate a virtual environment
+python -m venv .venv
+# Windows PowerShell:
+.\.venv\Scripts\Activate.ps1
+# Windows Command Prompt:
+.venv\Scripts\activate.bat
+# macOS / Linux:
+source .venv/bin/activate
+
+# 3. Install the project and development dependencies
+python -m pip install -e ".[dev]"
+
+# 4. Start without DATABASE_URL for in-memory development
+```
+
+The local `.env` file is ignored by Git, but the API and Alembic do not load it
+automatically. They read `DATABASE_URL` from the process environment. Without
+that variable the API uses in-memory repositories. To ensure this in Windows
+PowerShell:
+
+```powershell
+Remove-Item Env:DATABASE_URL -ErrorAction SilentlyContinue
+```
+
+Only set `DATABASE_URL` when you have an explicitly approved isolated database
+and obtain its connection string from a protected source, then provide it to
+the API process through an approved secret-management mechanism. Do not copy
+secrets into source files or commit `.env`. Alembic migrations are explicit and
+are never applied automatically by the API.
+
+---
+
+## Running the application
+
+```bash
+# From the repository root
+uvicorn unimatch.main:app --reload
+```
+
+The API will be available at `http://localhost:8000`.
+
+### Application review and submission limitations
+
+- `UniversityAdmissions` users can list and view submitted applications for
+  programmes owned by their university and record review decisions through
+  `GET /api/university/applications`,
+  `GET /api/university/applications/{application_id}`, and
+  `PUT /api/university/applications/{application_id}/review`.
+- The API derives university scope from the authenticated account. Other
+  universities receive no access; learners cannot review applications, and
+  `SchoolAdmin` users cannot make admissions decisions.
+- Review transitions and history are validated and retain the reviewer, time,
+  and note. A request for additional documents requires a nonblank explanation.
+- Application submission intentionally returns HTTP 409 until payment and
+  required human-verified documents are present. School staff can upload and
+  review local learner documents; no payment gateway or malware scanner is
+  integrated. Do not represent a seeded review test as proof of end-to-end
+  application submission.
+
+### AI programme guidance (Stage 4B)
+
+- Sign in as a verified `UniversityAdmissions` account and open **AI programme guidance**
+  at `/agent` to upload an authoritative PDF or DOCX admissions document (10 MB maximum).
+- Sign in as a `SchoolAdmin` and open **AI programme guidance** at `/agent` to ask about indexed programme
+  requirements. Select an in-scope learner to include deterministic APS and
+  eligibility results. The assistant cites retrieved document passages and does not
+  represent classifications as admissions decisions.
+- PDF/DOCX source text is extracted, chunked, and embedded with the pinned local
+  `sentence-transformers/all-MiniLM-L6-v2` model at revision
+  `1110a243fdf4706b3f48f1d95db1a4f5529b4d41`. Query retrieval uses normalized
+  embedding cosine similarity; the model loads from the local Hugging Face cache
+  only and does not download at API runtime. If the cache is missing, provision the
+  pinned model before starting the feature:
+
+  ```bash
+  python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2', revision='1110a243fdf4706b3f48f1d95db1a4f5529b4d41', device='cpu')"
+  ```
+
+- Answers use a clearly labelled local extractive fallback by default. A local
+  generative adapter is available for an OpenAI-compatible server such as LM
+  Studio or Ollama, but it is opt-in and makes no request unless both variables
+  below are set. The endpoint must be a locally controlled, privacy-approved
+  service because learner context may be included in the prompt:
+
+  ```bash
+  RAG_LLM_BASE_URL=http://localhost:1234
+  RAG_LLM_MODEL=your-local-model-id
+  # Optional for a local server that requires one:
+  RAG_LLM_API_KEY=local-only-key
+  ```
+
+  The adapter sends retrieved passages and the stored deterministic eligibility
+  snapshot, requires each generated answer to cite a supplied `[Source N]`, rejects
+  missing, malformed, or out-of-range citations, and instructs it not to
+  invent requirements or guarantee admission. Provider failure returns a clear
+  503; it does not silently fall back to an ungrounded answer. No paid provider
+  calls are made by this implementation.
+- Uploaded originals are not retained: only extracted passages, embeddings, and
+  metadata are stored. No approved blob/object storage is configured. Source
+  deletion removes the indexed content from future retrieval; prior conversation
+  messages can retain the historical answer and cited passage. This stage does not
+  delete conversations or prior message records. A secure policy should define
+  retention periods for original files, extracted text, vectors, chats, and backups;
+  restrict access by school/university and role; encrypt storage and backups; audit
+  access/deletion; and provide an approved retention expiry and verified deletion
+  process that covers backups. Re-indexing
+  re-embeds the retained passages. If extraction or chunking rules change, the
+  original must be uploaded again. Approved retention needs a configured storage
+  provider, container/bucket, least-privilege access, encryption, and deletion policy.
+- Retrieval is limited to sources belonging to universities with currently
+  published programmes. University source ingestion, re-indexing, and removal are
+  scoped to the authenticated university account.
+- In-memory indexes and conversations are lost on process restart. PostgreSQL-backed
+  persistence requires the migration chain through
+  `0006_semantic_embedding_metadata` (including its existing prerequisites).
+  Migration 0006 marks existing feature-hashed vectors as legacy so they cannot be
+  compared with semantic vectors; re-index each source from its stored passages
+  before retrieval. Migrations are not applied automatically.
+
+With Docker:
+
+```bash
+docker compose up --build
+```
+
+After confirming the target is the intended fresh development database, apply the reviewed schema explicitly:
+
+```bash
+docker compose exec unimatch alembic upgrade head
+```
+
+For a locally run API, set `DATABASE_URL` in the process environment. Without it, the module-level API uses in-memory repositories. Test applications created with `create_app()` remain in-memory unless a database URL is explicitly supplied.
+
+---
+
+## Running the tests
+
+```bash
+# Full test suite from the repository root
 python -m pytest tests/ -v
+
+# With coverage report
+python -m pytest tests/ --cov=src/unimatch --cov-report=term-missing
 ```
 
-Expected: **73 passed** (service unit tests + API integration tests).
-
-### Assignment 10 Tests (Domain Model & Patterns)
-
-```bash
-python -m pip install -r requirements.txt
-python -m pytest --cov=unimatch --cov=creational_patterns --cov-report=term-missing
-```
-
-For HTML coverage report: `python -m pytest --cov=unimatch --cov=creational_patterns --cov-report=html`
+The PostgreSQL repository integration test is skipped unless an explicitly approved local test database is configured using `UNIMATCH_TEST_DATABASE_URL` and `UNIMATCH_TEST_DATABASE_APPROVED=1`. It never uses `DATABASE_URL` as a fallback.
 
 ---
 
-## CI/CD Pipeline (Assignment 13)
+## API documentation
 
-### How It Works
+When the application is running, interactive API documentation is available at:
 
-The project uses GitHub Actions for continuous integration and deployment:
-
-1. **Trigger**: Runs on every push to any branch and pull request to `main`
-2. **Test Job**: 
-   - Sets up Python 3.11 environment
-   - Installs dependencies from `ASSIGNMENT_12/requirements.txt`
-   - Runs all tests using pytest
-   - Uploads test results as artifacts
-3. **Build Job** (only on main branch):
-   - Builds Python wheel package
-   - Uploads release artifact (retained for 30 days)
-
-### Branch Protection Rules
-
-The `main` branch is protected with the following rules:
-
-- **Require pull request reviews**: At least 1 approval before merging
-- **Require status checks to pass**: CI workflow must succeed
-- **Disallow direct pushes**: All changes must go through PRs
-- **Require branches to be up to date**: PR must be based on latest main
-
-These rules ensure code quality and prevent buggy code from reaching the main branch.
-
-### PR Workflow
-
-1. Create a new branch from `main`
-2. Make changes and commit
-3. Push branch and create pull request
-4. CI pipeline runs automatically
-5. Tests must pass before merge is allowed
-6. Review and approve PR
-7. Merge to `main` triggers artifact generation
-
-See [PROTECTION.md](PROTECTION.md) for detailed explanation of branch protection rules.
+- **Swagger UI:** `http://localhost:8000/docs`
+- **ReDoc:** `http://localhost:8000/redoc`
+- **Health check:** `http://localhost:8000/health`
 
 ---
 
-## CI/CD Screenshots
+## Links to capstone documentation
 
-![CI/CD Pipeline - Workflow Overview](screenshot/Test%20Automation%20(1).png)
-
-![CI/CD Pipeline - Test Results](screenshot/Test%20Automation%20(2).png)
-
-![CI/CD Pipeline - Successful Tests](screenshot/Test%20Automation%20(3).png)
-
-![CI/CD Pipeline - Artifact Generation](screenshot/Test%20Automation%20(4).png)
-
-![CI/CD Pipeline - Build Artifact](screenshot/Test%20Automation%20(5).png)
-
-![CI/CD Pipeline - Completed Workflow](screenshot/Test%20Automation%20(6).png)
-
-![CI/CD Pipeline - Generated Artifact](screenshot/Artifact%20screenshot%20(1).png)
-
-![CI/CD Pipeline - Artifact Details](screenshot/Artifact%20screenshot%20(2).png)
+| Document | Location |
+|---|---|
+| System specification | [docs/requirements/SPECIFICATION.md](docs/requirements/SPECIFICATION.md) |
+| Architecture overview | [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md) |
+| Domain model | [docs/architecture/DOMAIN_MODEL.md](docs/architecture/DOMAIN_MODEL.md) |
+| System requirements (functional) | [docs/requirements/SYSTEM_REQUIREMENTS (Functional Section).md](<docs/requirements/SYSTEM_REQUIREMENTS (Functional Section).md>) |
+| System requirements (non-functional) | [docs/requirements/SYSTEM_REQUIREMENTS (Non-Functional Section).md](<docs/requirements/SYSTEM_REQUIREMENTS (Non-Functional Section).md>) |
+| Use case specifications | [docs/requirements/USE_CASE_SPECIFICATIONS.md](docs/requirements/USE_CASE_SPECIFICATIONS.md) |
+| Test cases | [docs/testing/TEST_CASES.md](docs/testing/TEST_CASES.md) |
+| Requirements–tests traceability | [docs/testing/TRACEABILITY.md](docs/testing/TRACEABILITY.md) |
+| Implementation, testing and submission readiness | [docs/testing/IMPLEMENTATION_TESTING_EVALUATION.md](docs/testing/IMPLEMENTATION_TESTING_EVALUATION.md) |
 
 ---
 
-## Assignment 14: Open-Source Collaboration
+## Known limitations and gaps
 
-This repository has been prepared for open-source contribution as part of Assignment 14.
+- Without `DATABASE_URL`, the API uses in-memory repositories and data is lost on restart. PostgreSQL implementations exist, but their end-to-end runtime behavior is not claimed as verified here. Migrations require explicit operator action.
+- There is no payment gateway or malware scanner. Local document upload, persistence, download, and auditable human review are implemented; PostgreSQL persistence requires unapplied migration `0008_learner_document_storage`. Application submission continues to reject missing payment/document prerequisites with HTTP 409.
+- PostgreSQL integration tests, browser-based end-to-end tests, and visual accessibility checks were not completed in the latest verification.
+- Some legacy requirements and architecture material describe future integrations or workflows. They should not be interpreted as delivered functionality.
+- Local LLM operation depends on an operator-configured, privacy-approved OpenAI-compatible local endpoint. No provider is required or contacted by default.
+- Source citations validate references to retrieved chunks; citation correctness does not independently prove that a source passage is authoritative or that generated reasoning is factually correct.
+- Uploaded originals are discarded after extraction. Historical assistant messages may preserve cited passages after source deletion; they require a separately approved retention and deletion policy.
 
-### Collaboration Files
+---
 
-| File | Purpose |
-|------|---------|
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Setup instructions, coding standards, PR process |
-| [ROADMAP.md](ROADMAP.md) | Future features and project vision |
-| [LICENSE](LICENSE) | MIT License — free to use and fork |
-| [VOTING_RESULTS.md](VOTING_RESULTS.md) | Peer engagement tracking (stars, forks, feedback) |
-| [REFLECTION.md](REFLECTION.md) | 770-word reflection on open-source collaboration |
+## Capstone context
 
-### Issue Labels
+This repository is the working codebase for a CPUT Postgraduate Diploma in ICT capstone project. The Design Phase was completed and received 100%. This repository now hosts the Implementation, Testing and Evaluation Phase.
 
-Issues in this repository are tagged to help contributors find suitable work:
-
-- `good-first-issue` — 5+ issues suitable for newcomers (add tests, improve docs, add error handling, add logging, create Docker config)
-- `feature-request` — 3+ issues for desired enhancements (Redis caching, payment gateway, notification system)
-- `bug` — Known bugs to fix
-- `documentation` — Documentation improvements
-
-**Browse open issues:** https://github.com/Mabotse-Mosima/UniMatch-University-Application-System/issues
-
+Historical academic artefacts — assignment submissions, sprint backlogs, reflections, and earlier implementation iterations — are preserved under [docs/academic-evidence/](docs/academic-evidence/) to demonstrate the project's development progression.

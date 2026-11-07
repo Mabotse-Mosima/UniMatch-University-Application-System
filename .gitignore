@@ -11,14 +11,34 @@ __pycache__/
 .eggs/
 dist/
 build/
+coverage.xml
+htmlcov/
 
 # Virtual environments
 .venv/
 venv/
 ENV/
 
+# Environment / secrets — never commit real values
+.env
+.env.*
+!.env.example
+
+# Rebuildable local RAG index; keep only the checked-in registry scaffold.
+/var/rag-index/*
+!/var/
+!/var/rag-index/
+!/var/rag-index/source_registry.json
+
+# Generated test artefacts
+test_output.txt
+
 # IDE / OS
 .idea/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Local tool configuration (machine-specific, not shared)
+.qodo/
+.claude/

@@ -1,0 +1,172 @@
+{
+  "eligibility_notice": "All learner marks and programme requirements below are synthetic evaluation fixtures. They demonstrate the checked-in default NSC score bands and UniMatch eligibility classifications; they are not official admissions requirements for any university.",
+  "eligibility_cases": [
+    {
+      "id": "strong_top_six",
+      "profile": "Synthetic learner with seven recorded subjects; the best six APS subjects are used.",
+      "marks": [
+        {"subject": "Mathematics", "score": 85},
+        {"subject": "English", "score": 82},
+        {"subject": "Physical Sciences", "score": 78},
+        {"subject": "Life Sciences", "score": 75},
+        {"subject": "History", "score": 68},
+        {"subject": "Geography", "score": 62},
+        {"subject": "Life Orientation", "score": 95}
+      ],
+      "programmes": [
+        {"key": "strong", "minimum_aps": 34, "required_subjects": {"Mathematics": 70, "Physical Sciences": 60}, "expected_aps": 38, "expected_eligibility": "Guaranteed", "expected_subjects_met": true}
+      ]
+    },
+    {
+      "id": "narrow_subject_threshold",
+      "profile": "Synthetic learner exactly meeting the configured Mathematics mark threshold and narrowly exceeding APS.",
+      "marks": [
+        {"subject": "Mathematics", "score": 70},
+        {"subject": "English", "score": 70},
+        {"subject": "Physical Sciences", "score": 70},
+        {"subject": "Life Sciences", "score": 70},
+        {"subject": "History", "score": 70},
+        {"subject": "Geography", "score": 70}
+      ],
+      "programmes": [
+        {"key": "narrow", "minimum_aps": 35, "required_subjects": {"Mathematics": 70}, "expected_aps": 36, "expected_eligibility": "Likely", "expected_subjects_met": true}
+      ]
+    },
+    {
+      "id": "aps_borderline",
+      "profile": "Synthetic learner exactly at the configured APS minimum.",
+      "marks": [
+        {"subject": "Mathematics", "score": 60},
+        {"subject": "English", "score": 60},
+        {"subject": "Physical Sciences", "score": 60},
+        {"subject": "Life Sciences", "score": 60},
+        {"subject": "History", "score": 60},
+        {"subject": "Geography", "score": 60}
+      ],
+      "programmes": [
+        {"key": "borderline", "minimum_aps": 30, "required_subjects": {}, "expected_aps": 30, "expected_eligibility": "Borderline", "expected_subjects_met": true}
+      ]
+    },
+    {
+      "id": "below_aps_minimum",
+      "profile": "Synthetic learner below the configured APS minimum.",
+      "marks": [
+        {"subject": "Mathematics", "score": 50},
+        {"subject": "English", "score": 50},
+        {"subject": "Physical Sciences", "score": 50},
+        {"subject": "Life Sciences", "score": 50},
+        {"subject": "History", "score": 50},
+        {"subject": "Geography", "score": 50}
+      ],
+      "programmes": [
+        {"key": "below", "minimum_aps": 25, "required_subjects": {}, "expected_aps": 24, "expected_eligibility": "NotEligible", "expected_subjects_met": true}
+      ]
+    },
+    {
+      "id": "high_aps_subject_failure",
+      "profile": "Synthetic learner with high APS but Mathematics one mark below the configured subject requirement.",
+      "marks": [
+        {"subject": "Mathematics", "score": 69},
+        {"subject": "English", "score": 90},
+        {"subject": "Physical Sciences", "score": 90},
+        {"subject": "Life Sciences", "score": 90},
+        {"subject": "History", "score": 90},
+        {"subject": "Geography", "score": 90}
+      ],
+      "programmes": [
+        {"key": "subject_fail", "minimum_aps": 30, "required_subjects": {"Mathematics": 70}, "expected_aps": 40, "expected_eligibility": "NotEligible", "expected_subjects_met": false}
+      ]
+    },
+    {
+      "id": "required_subject_missing",
+      "profile": "Synthetic learner with high APS but no recorded mark for the configured required subject.",
+      "marks": [
+        {"subject": "English", "score": 80},
+        {"subject": "Physical Sciences", "score": 80},
+        {"subject": "Life Sciences", "score": 80},
+        {"subject": "History", "score": 80},
+        {"subject": "Geography", "score": 80},
+        {"subject": "Accounting", "score": 80}
+      ],
+      "programmes": [
+        {"key": "subject_missing", "minimum_aps": 30, "required_subjects": {"Mathematics": 70}, "expected_aps": 42, "expected_eligibility": "NotEligible", "expected_subjects_met": false}
+      ]
+    },
+    {
+      "id": "incomplete_four_subjects",
+      "profile": "Synthetic partial record with four subjects; the current engine sums available subjects and does not apply a completeness gate.",
+      "marks": [
+        {"subject": "Mathematics", "score": 80},
+        {"subject": "English", "score": 70},
+        {"subject": "Physical Sciences", "score": 60},
+        {"subject": "Life Sciences", "score": 50}
+      ],
+      "programmes": [
+        {"key": "partial", "minimum_aps": 22, "required_subjects": {}, "expected_aps": 22, "expected_eligibility": "Borderline", "expected_subjects_met": true}
+      ]
+    },
+    {
+      "id": "different_programme_requirements",
+      "profile": "One synthetic learner assessed against two different APS requirements.",
+      "marks": [
+        {"subject": "Mathematics", "score": 70},
+        {"subject": "English", "score": 90},
+        {"subject": "Physical Sciences", "score": 90},
+        {"subject": "Life Sciences", "score": 90},
+        {"subject": "History", "score": 90},
+        {"subject": "Geography", "score": 90}
+      ],
+      "programmes": [
+        {"key": "minimum_41", "minimum_aps": 41, "required_subjects": {}, "expected_aps": 41, "expected_eligibility": "Borderline", "expected_subjects_met": true},
+        {"key": "minimum_42", "minimum_aps": 42, "required_subjects": {}, "expected_aps": 41, "expected_eligibility": "NotEligible", "expected_subjects_met": true}
+      ]
+    }
+  ],
+  "rag": {
+    "notice": "These are synthetic knowledge-base passages and questions for retrieval/grounding checks only. They are not real university policies or admissions guidance.",
+    "documents": [
+      {
+        "university_key": "uni_x",
+        "text": "Synthetic fixture only. Synthetic Computing requires Mathematics minimum mark 70. Applications close 30 September 2099."
+      },
+      {
+        "university_key": "uni_y",
+        "text": "Synthetic fixture only. Synthetic Computing requires Mathematics minimum mark 99. Applications close 15 October 2099."
+      }
+    ],
+    "questions": [
+      {
+        "id": "alpha_math_requirement",
+        "question": "What Mathematics minimum mark is listed for Synthetic Computing at University Alpha?",
+        "university_key": "uni_x",
+        "expected_fragment": "Mathematics minimum mark 70",
+        "forbidden_fragment": "Mathematics minimum mark 99",
+        "expected_abstained": false
+      },
+      {
+        "id": "beta_math_requirement",
+        "question": "What Mathematics minimum mark is listed for Synthetic Computing at University Beta?",
+        "university_key": "uni_y",
+        "expected_fragment": "Mathematics minimum mark 99",
+        "forbidden_fragment": "Mathematics minimum mark 70",
+        "expected_abstained": false
+      },
+      {
+        "id": "alpha_deadline",
+        "question": "When do applications close for Synthetic Computing at University Alpha?",
+        "university_key": "uni_x",
+        "expected_fragment": "Applications close 30 September 2099",
+        "forbidden_fragment": "15 October 2099",
+        "expected_abstained": false
+      },
+      {
+        "id": "unsupported_shuttle_schedule",
+        "question": "What is the campus shuttle timetable for this programme?",
+        "university_key": "uni_x",
+        "expected_fragment": null,
+        "expected_abstained": true
+      }
+    ],
+    "empty_scope_question": "What Mathematics minimum mark is listed?"
+  }
+}

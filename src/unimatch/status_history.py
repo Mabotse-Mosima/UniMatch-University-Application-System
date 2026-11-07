@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import UUID, uuid4
 
 from unimatch.enums import ApplicationStatusEnum
@@ -32,6 +32,6 @@ class StatusHistoryEntry:
             previous_status=prev,
             new_status=next_status,
             changed_by=actor,
-            changed_at=datetime.utcnow(),
+            changed_at=datetime.now(timezone.utc),
             note=note,
         )

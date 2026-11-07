@@ -20,7 +20,7 @@ Thank you for your interest in contributing to UniMatch! This document provides 
 
 Before contributing, ensure you have the following installed:
 
-- **Python 3.11+** - For running the service layer and API
+- **Python 3.12+** - For running the service layer and API
 - **Git** - For version control
 - **GitHub account** - For submitting pull requests
 - **Code editor** - VS Code, PyCharm, or similar
@@ -46,30 +46,25 @@ Before contributing, ensure you have the following installed:
 
 ### 2. Set Up Development Environment
 
-#### For Assignment 12 (Service Layer & API):
-
 ```bash
-cd ASSIGNMENT_12
-python -m pip install -r requirements.txt
-```
+# Create and activate a virtual environment
+python -m venv .venv
+# Windows:
+.venv\Scripts\activate
+# macOS / Linux:
+source .venv/bin/activate
 
-#### For Assignment 10 (Domain Model & Patterns):
-
-```bash
-python -m pip install -r requirements.txt
+# Install all dependencies
+pip install -r requirements.txt
 ```
 
 ### 3. Run Tests
 
-Verify your setup by running tests:
+Verify your setup by running the full suite from the repository root:
 
 ```bash
-# Assignment 12 tests
-cd ASSIGNMENT_12
 python -m pytest tests/ -v
-
-# Assignment 10 tests
-python -m pytest --cov=unimatch --cov=creational_patterns --cov-report=term-missing
+# Expected: 81 tests, all pass
 ```
 
 ---
@@ -198,10 +193,12 @@ python -m pytest --cov=. --cov-report=html
 
 ```
 tests/
+├── conftest.py                    # Root conftest (sets pythonpath)
+├── test_domain_entities.py        # Domain entity tests
 ├── services/
-│   └── test_services.py      # Service layer tests
+│   └── test_services.py           # Service layer unit tests
 └── api/
-    └── test_api.py           # API integration tests
+    └── test_api.py                # API integration tests (httpx TestClient)
 ```
 
 ---
@@ -340,22 +337,21 @@ If you just want to jump straight in, here is the minimum you need:
 git clone https://github.com/YOUR_USERNAME/UniMatch-University-Application-System.git
 cd UniMatch-University-Application-System
 
-# 2. Install API dependencies
-cd ASSIGNMENT_12
+# 2. Install all dependencies
 pip install -r requirements.txt
 
-# 3. Run the full test suite (should show ~73 passing)
+# 3. Run the full test suite from the repo root (should show 81 passing)
 python -m pytest tests/ -v
 
 # 4. Start the API and open Swagger UI
-uvicorn main:app --reload
+uvicorn unimatch.main:app --reload
 # → http://localhost:8000/docs
 ```
 
 ## Known Setup Gotchas
 
-- The `ASSIGNMENT_12/.venv/` directory is committed but **should not be used** —
-  create your own virtual environment with `python -m venv .venv` instead.
-- Each assignment subdirectory (`ASSIGNMENT_11/`, `ASSIGNMENT_12/`) has its own
-  `requirements.txt`. Install from the one matching the code you are working on.
-- Tests are run from **inside** the assignment subdirectory, not the repo root.
+- Always run tests and the application from the **repository root**, not from a subdirectory.
+- The application is installed as the `unimatch` package under `src/`. The `pythonpath`
+  setting in `pyproject.toml` configures this automatically for pytest.
+- Use your own virtual environment (`python -m venv .venv`). Do not reuse any `.venv`
+  that may have been left in historical subdirectories.

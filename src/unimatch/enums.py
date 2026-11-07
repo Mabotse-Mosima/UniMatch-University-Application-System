@@ -4,6 +4,7 @@ from enum import Enum
 
 
 class RoleEnum(Enum):
+    SystemAdmin = "SystemAdmin"
     Teacher = "Teacher"
     SchoolAdmin = "SchoolAdmin"
     Learner = "Learner"
@@ -63,3 +64,9 @@ class ProfileStatusEnum(Enum):
     Stale = "Stale"
     GuidanceComplete = "GuidanceComplete"
     Inactive = "Inactive"
+
+
+class AccountStateEnum(Enum):
+    Pending = "Pending"
+    Active = "Active"
+    Suspended = "Suspended"
