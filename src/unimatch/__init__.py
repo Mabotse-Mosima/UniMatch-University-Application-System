@@ -1,4 +1,4 @@
-"""UniMatch domain package (Assignment 10 class diagram implementation)."""
+"""UniMatch package."""
 
 from unimatch.entities import (
     Application,
@@ -20,7 +20,7 @@ from unimatch.enums import (
     ProgrammeStatusEnum,
     RoleEnum,
 )
-from unimatch.services import (
+from unimatch.domain_services import (
     ApsCalculator,
     EligibilityClassifier,
     NotificationService,

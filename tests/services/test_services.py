@@ -48,6 +48,7 @@ from unimatch.services import (
     NotEligibleError,
     ProgrammeNotActiveError,
     ProgrammeNotFoundError,
+    SimulationResult,
     UniversityProgrammeService,
 )
 
@@ -88,6 +89,17 @@ def learner_svc_with_rules(learner_repo, application_repo, scoring_rule_repo):
         learner_repo=learner_repo,
         application_repo=application_repo,
         scoring_rule_repo=scoring_rule_repo,
+    )
+
+
+@pytest.fixture
+def learner_svc_full(learner_repo, application_repo, scoring_rule_repo, programme_repo):
+    """LearnerProfileService with all optional repos wired — for REQ-005 simulation tests."""
+    return LearnerProfileService(
+        learner_repo=learner_repo,
+        application_repo=application_repo,
+        scoring_rule_repo=scoring_rule_repo,
+        programme_repo=programme_repo,
     )
 
 
@@ -965,6 +977,28 @@ class TestApplicationService:
         assert app.status == ApplicationStatusEnum.Draft
         assert app.learner_id == learner.learner_id
 
+    def test_create_application_reuses_authorized_preloaded_learner(
+        self, application_svc, learner_repo, programme_repo, monkeypatch
+    ):
+        learner, prog = self._setup(learner_repo, programme_repo)
+        original_find_by_id = learner_repo.find_by_id
+        lookups = []
+
+        def find_by_id(learner_id):
+            lookups.append(learner_id)
+            return original_find_by_id(learner_id)
+
+        monkeypatch.setattr(learner_repo, "find_by_id", find_by_id)
+        created = application_svc.create_application(
+            learner_id=learner.learner_id,
+            programme_id=prog.programme_id,
+            fee_amount=Decimal("200"),
+            learner=learner,
+        )
+
+        assert created.learner_id == learner.learner_id
+        assert lookups == []
+
     def test_create_application_learner_not_found(self, application_svc, programme_repo):
         prog = _make_programme()
         prog.status = ProgrammeStatusEnum.Published
@@ -1054,7 +1088,8 @@ class TestApplicationService:
         learner, prog = self._setup(learner_repo, programme_repo)
         app = application_svc.create_application(learner.learner_id, prog.programme_id, Decimal("200"))
         actor = uuid4()
-        application_svc.cancel_application(app.application_id, actor)
+        note = "Learner withdrew the application"
+        application_svc.cancel_application(app.application_id, actor, note)
 
         persisted = application_repo.find_by_id(app.application_id)
         history = persisted.get_status_history()
@@ -1062,6 +1097,7 @@ class TestApplicationService:
         assert history[0].previous_status == ApplicationStatusEnum.Draft
         assert history[0].new_status == ApplicationStatusEnum.Cancelled
         assert history[0].changed_by == actor
+        assert history[0].note == note
 
     def test_cancel_accepted_application_raises(self, application_svc, learner_repo, programme_repo, application_repo):
         learner, prog = self._setup(learner_repo, programme_repo)
@@ -1507,3 +1543,310 @@ class TestApplicationServiceREQ002:
             learner.learner_id, prog.programme_id, Decimal("300")
         )
         assert app.status == ApplicationStatusEnum.Draft
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Improvement simulation (REQ-005)
+# ─────────────────────────────────────────────────────────────────────────────
+
+class TestSimulateEligibility:
+    """REQ-005: LearnerProfileService.simulate_eligibility computes hypothetical
+    eligibility without mutating any stored data.
+
+    All ScoringRule instances are SYNTHETIC test rules. They do not represent
+    the official scoring formula of any South African university.
+
+    APS point values follow the standard NSC table:
+      score ≥80 → 7 pts, ≥70 → 6 pts, ≥60 → 5 pts, ≥50 → 4 pts,
+      ≥40 → 3 pts, ≥30 → 2 pts, otherwise → 1 pt.
+    """
+
+    # ── Helpers ───────────────────────────────────────────────────────────────
+
+    def _make_and_save_learner(self, learner_repo, marks: dict) -> LearnerProfile:
+        learner = _make_learner()
+        for subject, score in marks.items():
+            learner.marks.append(Mark(
+                mark_id=uuid4(),
+                learner_id=learner.learner_id,
+                subject_name=subject,
+                score=score,
+                exam_type="NSC",
+                academic_year=2025,
+            ))
+        learner_repo.save(learner)
+        return learner
+
+    def _published_programme(
+        self,
+        programme_repo,
+        university_id: UUID,
+        min_aps: int,
+        required_subjects: dict | None = None,
+    ) -> UniversityProgramme:
+        prog = UniversityProgramme(
+            programme_id=uuid4(),
+            university_id=university_id,
+            name="BSc Computer Science",
+            faculty="Science",
+            minimum_aps=min_aps,
+            application_deadline=date(2099, 12, 31),
+            application_fee=Decimal("200.00"),
+            required_documents=["ID"],
+            status=ProgrammeStatusEnum.Published,
+            published_by=uuid4(),
+            required_subjects=required_subjects or {},
+        )
+        programme_repo.save(prog)
+        return prog
+
+    # ── Tests ─────────────────────────────────────────────────────────────────
+
+    def test_improvement_changes_aps_and_eligibility(
+        self, learner_svc_full, learner_repo, programme_repo
+    ):
+        """A mark improvement in an override must lift APS and eligibility.
+
+        Stored marks: Mathematics=50 → 4pts, English=50 → 4pts
+          NSC APS = 4+4 = 8; programme min=9 → diff=-1 → NotEligible (stored)
+        Override: Mathematics=70 → 6pts (added as third mark entry)
+          Pool: [6pts, 4pts, 4pts] → top-6 sum = 14; diff=14-9=5 → Guaranteed
+        """
+        uni_id = uuid4()
+        learner = self._make_and_save_learner(
+            learner_repo, {"Mathematics": 50, "English": 50}
+        )
+        prog = self._published_programme(programme_repo, uni_id, min_aps=9)
+
+        result = learner_svc_full.simulate_eligibility(
+            learner.learner_id, prog.programme_id, overrides={"Mathematics": 70}
+        )
+
+        # Pool: Math=50(4pts), Math=70(6pts), English=50(4pts) → top-6 = 6+4+4 = 14
+        assert result.simulated_aps == 14
+        assert result.eligibility == EligibilityEnum.Guaranteed
+        assert isinstance(result, SimulationResult)
+
+    def test_override_below_compulsory_subject_threshold(
+        self, learner_svc_full, learner_repo, programme_repo
+    ):
+        """An override that places the best Mathematics mark below the required
+        minimum must return NotEligible.
+
+        Learner has no stored Mathematics mark.
+        Override: Mathematics=55 (below required 60) → subject check fails → NotEligible.
+        """
+        uni_id = uuid4()
+        learner = self._make_and_save_learner(
+            learner_repo, {"English": 80, "Science": 80, "History": 80,
+                           "Geography": 80, "Arts": 80, "Accounting": 80}
+        )
+        prog = self._published_programme(
+            programme_repo, uni_id, min_aps=10,
+            required_subjects={"Mathematics": 60},
+        )
+
+        result = learner_svc_full.simulate_eligibility(
+            learner.learner_id, prog.programme_id, overrides={"Mathematics": 55}
+        )
+
+        assert result.eligibility == EligibilityEnum.NotEligible
+        assert result.subject_requirements_checked is True
+
+    def test_missing_compulsory_subject_supplied_via_override(
+        self, learner_svc_full, learner_repo, programme_repo
+    ):
+        """A required subject absent from stored marks can be satisfied via an override.
+
+        Stored marks: 6 non-Mathematics subjects at 80 (→7pts each).
+        Override: Mathematics=75 (≥ required 60) → subject check passes.
+        APS pool: [7,7,7,7,7,7,6] → top-6 = 42; diff=42-20=22 → Guaranteed.
+        """
+        uni_id = uuid4()
+        learner = self._make_and_save_learner(
+            learner_repo,
+            {"English": 80, "Science": 80, "History": 80,
+             "Geography": 80, "Arts": 80, "Accounting": 80},
+        )
+        prog = self._published_programme(
+            programme_repo, uni_id, min_aps=20,
+            required_subjects={"Mathematics": 60},
+        )
+
+        result = learner_svc_full.simulate_eligibility(
+            learner.learner_id, prog.programme_id, overrides={"Mathematics": 75}
+        )
+
+        assert result.eligibility == EligibilityEnum.Guaranteed
+        assert result.subject_requirements_checked is True
+
+    def test_university_rule_applied_when_registered(
+        self, learner_svc_full, learner_repo, programme_repo, scoring_rule_repo
+    ):
+        """When a ScoringRule is registered for the programme's university, the
+        simulation uses the university-specific APS formula.
+
+        Stored marks: Mathematics=80 → 7pts, English=70 → 6pts.
+          NSC APS = 7+6 = 13; programme min=15 → would be NotEligible.
+        Synthetic rule: Mathematics weighted 2.0.
+          Simulated APS = floor(7×2.0 + 6) = 20; diff=5 → Guaranteed.
+        """
+        uni_id = uuid4()
+        rule = ScoringRule(
+            university_id=uni_id,
+            band_thresholds=NSC_DEFAULT_SCORING_RULE.band_thresholds,
+            subject_count=6,
+            excluded_subjects=[],
+            subject_weightings={"Mathematics": 2.0},
+        )
+        scoring_rule_repo.save(rule)
+        learner = self._make_and_save_learner(
+            learner_repo, {"Mathematics": 80, "English": 70}
+        )
+        prog = self._published_programme(programme_repo, uni_id, min_aps=15)
+
+        result = learner_svc_full.simulate_eligibility(
+            learner.learner_id, prog.programme_id, overrides={}
+        )
+
+        assert result.simulated_aps == 20
+        assert result.eligibility == EligibilityEnum.Guaranteed
+        assert result.university_rule_applied is True
+
+    def test_nsc_fallback_when_no_rule_registered(
+        self, learner_svc_full, learner_repo, programme_repo
+    ):
+        """When no ScoringRule is registered, the standard NSC formula is used.
+
+        Stored marks: Mathematics=90, English=90, Science=90 → NSC APS = 3×7 = 21.
+        Programme min=20; diff=1 → Likely.
+        """
+        uni_id = uuid4()  # no rule saved
+        learner = self._make_and_save_learner(
+            learner_repo, {"Mathematics": 90, "English": 90, "Science": 90}
+        )
+        prog = self._published_programme(programme_repo, uni_id, min_aps=20)
+
+        result = learner_svc_full.simulate_eligibility(
+            learner.learner_id, prog.programme_id, overrides={}
+        )
+
+        assert result.simulated_aps == 21
+        assert result.eligibility == EligibilityEnum.Likely
+        assert result.university_rule_applied is False
+
+    def test_nonexistent_learner_raises(self, learner_svc_full, programme_repo):
+        prog = self._published_programme(programme_repo, uuid4(), min_aps=20)
+        with pytest.raises(LearnerNotFoundError):
+            learner_svc_full.simulate_eligibility(uuid4(), prog.programme_id, {})
+
+    def test_nonexistent_programme_raises(self, learner_svc_full, learner_repo):
+        learner = self._make_and_save_learner(learner_repo, {"Mathematics": 80})
+        with pytest.raises(ProgrammeNotFoundError):
+            learner_svc_full.simulate_eligibility(learner.learner_id, uuid4(), {})
+
+    def test_invalid_override_score_above_100_raises(
+        self, learner_svc_full, learner_repo, programme_repo
+    ):
+        learner = self._make_and_save_learner(learner_repo, {"Mathematics": 80})
+        prog = self._published_programme(programme_repo, uuid4(), min_aps=20)
+        with pytest.raises(ValueError, match="101"):
+            learner_svc_full.simulate_eligibility(
+                learner.learner_id, prog.programme_id, {"Mathematics": 101}
+            )
+
+    def test_invalid_override_score_below_0_raises(
+        self, learner_svc_full, learner_repo, programme_repo
+    ):
+        learner = self._make_and_save_learner(learner_repo, {"Mathematics": 80})
+        prog = self._published_programme(programme_repo, uuid4(), min_aps=20)
+        with pytest.raises(ValueError, match="-1"):
+            learner_svc_full.simulate_eligibility(
+                learner.learner_id, prog.programme_id, {"Mathematics": -1}
+            )
+
+    def test_stored_marks_unchanged_after_successful_simulation(
+        self, learner_svc_full, learner_repo, programme_repo
+    ):
+        """Stored marks must be identical before and after a successful simulation."""
+        uni_id = uuid4()
+        learner = self._make_and_save_learner(
+            learner_repo, {"Mathematics": 50, "English": 50}
+        )
+        marks_before = [
+            (m.mark_id, m.score) for m in learner_repo.find_by_id(learner.learner_id).marks
+        ]
+        prog = self._published_programme(programme_repo, uni_id, min_aps=9)
+
+        learner_svc_full.simulate_eligibility(
+            learner.learner_id, prog.programme_id, overrides={"Mathematics": 80}
+        )
+
+        marks_after = [
+            (m.mark_id, m.score) for m in learner_repo.find_by_id(learner.learner_id).marks
+        ]
+        assert marks_after == marks_before
+
+    def test_stored_marks_unchanged_after_validation_failure(
+        self, learner_svc_full, learner_repo, programme_repo
+    ):
+        """Stored marks must be unchanged even when simulation raises ValueError."""
+        learner = self._make_and_save_learner(learner_repo, {"Mathematics": 50})
+        marks_before = [
+            (m.mark_id, m.score) for m in learner_repo.find_by_id(learner.learner_id).marks
+        ]
+        prog = self._published_programme(programme_repo, uuid4(), min_aps=9)
+
+        with pytest.raises(ValueError):
+            learner_svc_full.simulate_eligibility(
+                learner.learner_id, prog.programme_id, {"Mathematics": 999}
+            )
+
+        marks_after = [
+            (m.mark_id, m.score) for m in learner_repo.find_by_id(learner.learner_id).marks
+        ]
+        assert marks_after == marks_before
+
+    def test_no_repository_write_occurs(
+        self, learner_svc_full, learner_repo, programme_repo, application_repo
+    ):
+        """Simulation must not create or modify any persisted record."""
+        uni_id = uuid4()
+        learner = self._make_and_save_learner(
+            learner_repo, {"Mathematics": 60, "English": 60}
+        )
+        prog = self._published_programme(programme_repo, uni_id, min_aps=10)
+
+        learners_before = len(learner_repo.find_all())
+        programmes_before = len(programme_repo.find_all())
+        applications_before = len(application_repo.find_all())
+
+        learner_svc_full.simulate_eligibility(
+            learner.learner_id, prog.programme_id, overrides={"Mathematics": 80}
+        )
+
+        assert len(learner_repo.find_all()) == learners_before
+        assert len(programme_repo.find_all()) == programmes_before
+        assert len(application_repo.find_all()) == applications_before
+
+    def test_duplicate_subject_override_uses_best_mark_policy(
+        self, learner_svc_full, learner_repo, programme_repo
+    ):
+        """When an override score is lower than a stored mark for the same subject,
+        the stored mark remains dominant — consistent with the best-mark policy.
+
+        Stored: Mathematics=90 → 7pts.
+        Override: Mathematics=40 → 3pts.
+        Both enter the APS pool: [7pts, 3pts] → top-6 sum = 10; min=9 → diff=1 → Likely.
+        For a subject requirement ≤90, max(90, 40)=90 still satisfies it.
+        """
+        uni_id = uuid4()
+        learner = self._make_and_save_learner(learner_repo, {"Mathematics": 90})
+        prog = self._published_programme(programme_repo, uni_id, min_aps=9)
+
+        result = learner_svc_full.simulate_eligibility(
+            learner.learner_id, prog.programme_id, overrides={"Mathematics": 40}
+        )
+
+        assert result.simulated_aps == 10
+        assert result.eligibility == EligibilityEnum.Likely

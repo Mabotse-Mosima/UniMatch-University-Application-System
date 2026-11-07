@@ -42,6 +42,7 @@ from unimatch.enums import (
     ProgrammeStatusEnum,
     RoleEnum,
 )
+from unimatch.repositories import DocumentRepository
 
 
 # ---------------------------------------------------------------------------
@@ -108,6 +109,31 @@ class InvalidStatusTransitionError(Exception):
 
 
 # ---------------------------------------------------------------------------
+# Simulation result value object (REQ-005)
+# ---------------------------------------------------------------------------
+
+@dataclass
+class SimulationResult:
+    """Outcome of a hypothetical-mark eligibility simulation (REQ-005).
+
+    This object is read-only and carries no side effects. It is never
+    persisted and does not represent a stored eligibility decision.
+    """
+
+    learner_id: UUID
+    programme_id: UUID
+    simulated_aps: int
+    eligibility: EligibilityEnum
+    # True when the programme has required_subjects and they were evaluated
+    # against the simulated marks. False when the programme has no
+    # compulsory subject requirements.
+    subject_requirements_checked: bool
+    # True when a university-specific ScoringRule was applied; False when
+    # the standard NSC formula was used as a fallback.
+    university_rule_applied: bool
+
+
+# ---------------------------------------------------------------------------
 # Duck-typed repository protocols (avoid circular imports in tests)
 # ---------------------------------------------------------------------------
 
@@ -158,6 +184,7 @@ class LearnerProfileService:
     learner_repo: _LearnerRepo  # type: ignore[type-arg]
     application_repo: _ApplicationRepo  # type: ignore[type-arg]
     scoring_rule_repo: Optional[_ScoringRuleRepo] = None  # type: ignore[type-arg]
+    programme_repo: Optional[_ProgrammeRepo] = None  # type: ignore[type-arg]
 
     def create_profile(self, profile: LearnerProfile) -> LearnerProfile:
         self.learner_repo.save(profile)
@@ -240,6 +267,113 @@ class LearnerProfileService:
 
         self.learner_repo.save(profile)
         return profile
+
+    def simulate_eligibility(
+        self,
+        learner_id: UUID,
+        programme_id: UUID,
+        overrides: dict[str, int],
+    ) -> SimulationResult:
+        """Simulate how hypothetical mark changes affect a learner's eligibility (REQ-005).
+
+        Constructs a temporary marks collection by appending one Mark per
+        override to the learner's stored marks. This is consistent with how
+        multiple marks for the same subject are handled elsewhere in the system:
+
+        - Subject requirements: the best (highest) mark across all entries for a
+          subject is used. An override that exceeds a stored mark improves the
+          outcome; an override below a stored mark leaves the stored mark dominant.
+        - APS: every mark entry contributes individually to the ranked pool,
+          and the top-N subjects are selected. A higher override score ranks
+          above a lower stored score and replaces it in the top-N selection.
+
+        No repository is written. Stored marks, learner entities, programme
+        entities, and applications are not modified.
+
+        Args:
+            learner_id: UUID of the learner whose marks are the baseline.
+            programme_id: UUID of the programme to evaluate eligibility for.
+            overrides: mapping of subject name to hypothetical score (0-100).
+
+        Returns:
+            SimulationResult with simulated APS, eligibility category, and
+            flags indicating which formula and checks were applied.
+
+        Raises:
+            LearnerNotFoundError: when learner_id does not exist.
+            ProgrammeNotFoundError: when programme_id does not exist, or when
+                this service instance has no programme_repo wired.
+            ValueError: when any override score is outside 0-100.
+        """
+        learner = self.get_profile(learner_id)
+
+        if self.programme_repo is None:
+            raise ProgrammeNotFoundError(programme_id)
+        programme = self.programme_repo.find_by_id(programme_id)
+        if programme is None:
+            raise ProgrammeNotFoundError(programme_id)
+
+        for subject, score in overrides.items():
+            if not (0 <= score <= 100):
+                raise ValueError(
+                    f"Override score for '{subject}' = {score} "
+                    "is outside the valid 0-100 NSC score range"
+                )
+
+        # Build simulated marks: stored marks + one new Mark per override.
+        # Overrides are additional entries, not replacements. The existing
+        # scoring policies (best mark for subject requirements; all marks
+        # in the ranked APS pool) handle both cases naturally.
+        sim_marks = list(learner.marks) + [
+            Mark(
+                mark_id=uuid4(),
+                learner_id=learner_id,
+                subject_name=subject,
+                score=score,
+                exam_type="Simulated",
+                academic_year=0,
+            )
+            for subject, score in overrides.items()
+        ]
+
+        # APS — university-specific formula when a rule is registered (REQ-002);
+        # standard NSC top-6 formula otherwise.
+        rule = self.find_scoring_rule(programme.university_id)
+        if rule is not None:
+            simulated_aps = calc_aps_for_university(sim_marks, rule)
+            university_rule_applied = True
+        else:
+            ranked_pts = sorted(
+                (m.to_aps_points() for m in sim_marks), reverse=True
+            )
+            simulated_aps = sum(ranked_pts[:6])
+            university_rule_applied = False
+
+        # Compulsory subject requirements (REQ-003)
+        subject_requirements_checked = bool(programme.required_subjects)
+        subjects_met = programme.meets_subject_requirements(sim_marks)
+
+        if not subjects_met:
+            eligibility = EligibilityEnum.NotEligible
+        else:
+            diff = simulated_aps - programme.minimum_aps
+            if diff >= 4:
+                eligibility = EligibilityEnum.Guaranteed
+            elif diff >= 1:
+                eligibility = EligibilityEnum.Likely
+            elif diff >= 0:
+                eligibility = EligibilityEnum.Borderline
+            else:
+                eligibility = EligibilityEnum.NotEligible
+
+        return SimulationResult(
+            learner_id=learner_id,
+            programme_id=programme_id,
+            simulated_aps=simulated_aps,
+            eligibility=eligibility,
+            subject_requirements_checked=subject_requirements_checked,
+            university_rule_applied=university_rule_applied,
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -390,6 +524,7 @@ class ApplicationService:
     learner_repo: _LearnerRepo  # type: ignore[type-arg]
     programme_repo: _ProgrammeRepo  # type: ignore[type-arg]
     scoring_rule_repo: Optional[_ScoringRuleRepo] = None  # type: ignore[type-arg]
+    document_repo: DocumentRepository | None = None
 
     _TERMINAL: frozenset = frozenset({
         ApplicationStatusEnum.Accepted,
@@ -402,15 +537,25 @@ class ApplicationService:
         app = self.application_repo.find_by_id(application_id)
         if app is None:
             raise ApplicationNotFoundError(application_id)
+        if app.linked_programme is None:
+            app.linked_programme = self.programme_repo.find_by_id(app.programme_id)
+        if self.document_repo is not None:
+            app.documents = self.document_repo.find_by_application(app.application_id)
         return app
 
     def list_applications(self) -> List[Application]:
-        return self.application_repo.find_all()
+        return [
+            self.get_application(application.application_id)
+            for application in self.application_repo.find_all()
+        ]
 
     def list_for_learner(self, learner_id: UUID) -> List[Application]:
         if self.learner_repo.find_by_id(learner_id) is None:
             raise LearnerNotFoundError(learner_id)
-        return self.application_repo.find_by_learner(learner_id)
+        return [
+            self.get_application(application.application_id)
+            for application in self.application_repo.find_by_learner(learner_id)
+        ]
 
     def delete_application(self, application_id: UUID) -> None:
         self.get_application(application_id)
@@ -423,10 +568,15 @@ class ApplicationService:
         fee_amount: Decimal,
         payment_reference: str = "",
         acknowledgement_reference: str = "",
+        *,
+        learner: LearnerProfile | None = None,
     ) -> Application:
         """Create a new application enforcing all business rules (REQ-004)."""
-        learner = self.learner_repo.find_by_id(learner_id)
         if learner is None:
+            learner = self.learner_repo.find_by_id(learner_id)
+            if learner is None:
+                raise LearnerNotFoundError(learner_id)
+        elif learner.learner_id != learner_id:
             raise LearnerNotFoundError(learner_id)
 
         programme = self.programme_repo.find_by_id(programme_id)
@@ -504,17 +654,24 @@ class ApplicationService:
         self.application_repo.save(app)
         return app
 
-    def submit_application(self, application_id: UUID) -> Application:
+    def submit_application(self, application_id: UUID, actor_id: UUID) -> Application:
         app = self.get_application(application_id)
-        app.submit()
+        app.submit(actor_id)
         self.application_repo.save(app)
         return app
 
-    def cancel_application(self, application_id: UUID, actor_id: UUID) -> Application:
+    def cancel_application(
+        self, application_id: UUID, actor_id: UUID, note: str = ""
+    ) -> Application:
         app = self.get_application(application_id)
         if app.status in self._TERMINAL:
             raise InvalidStatusTransitionError(app.status, ApplicationStatusEnum.Cancelled)
-        app.cancel(actor_id)
+        try:
+            app.cancel(actor_id, note)
+        except ValueError as exc:
+            raise InvalidStatusTransitionError(
+                app.status, ApplicationStatusEnum.Cancelled
+            ) from exc
         self.application_repo.save(app)
         return app
 
@@ -523,6 +680,7 @@ __all__ = [
     "LearnerProfileService",
     "UniversityProgrammeService",
     "ApplicationService",
+    "SimulationResult",
     "LearnerNotFoundError",
     "ProgrammeNotFoundError",
     "ApplicationNotFoundError",

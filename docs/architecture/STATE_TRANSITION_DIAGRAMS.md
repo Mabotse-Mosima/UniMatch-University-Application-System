@@ -12,6 +12,16 @@
 
 This document defines state transition diagrams for 8 critical objects in UniMatch. Each diagram models the complete lifecycle of an object — every state it can occupy, every event that triggers a transition, and every guard condition that constrains movement between states. All diagrams are grounded in the functional requirements from Assignment 4 and the use case specifications from Assignment 5.
 
+> **Implementation status:** These assignment diagrams describe the intended target
+> lifecycle, not a claim that every transition or integration is delivered. In
+> particular, payment gateway callbacks, complete application-document upload and
+> verification, automated deadline processing, and notification delivery are not
+> implemented. The current API enforces submission prerequisites and returns HTTP
+> 409 when payment/document evidence is missing. University review is implemented
+> for an already-submitted application and is restricted to the university that
+> owns its programme. See the [implementation and testing report](../testing/IMPLEMENTATION_TESTING_EVALUATION.md)
+> for the current verified scope and limitations.
+
 ---
 
 
@@ -62,7 +72,7 @@ stateDiagram-v2
     Cancelled --> [*]
     DeadlineMissed --> [*]
 ```
-![STD1 Screenshot](screenshot/STD1.png)
+![STD1 Screenshot](../academic-evidence/screenshots/STD1.png)
  
 **Key states**: Draft, FeeOutstanding, FeePaid, PackageIncomplete, PackageReady, Submitted, UnderReview, DocsRequested, Accepted, Rejected, Waitlisted, Cancelled, DeadlineMissed (terminal).
  
@@ -109,7 +119,7 @@ stateDiagram-v2
     Inactive --> Active : Administrator reactivates [with reason logged]
     Inactive --> [*] : Learner graduates, record archived
 ```
-![STD2 Screenshot](screenshot/STD2%20.png)
+![STD2 Screenshot](../academic-evidence/screenshots/STD2%20.png)
  
 **Key states**: Creating, Incomplete, DuplicateID, Active, MarksRecorded, RecommendationsGenerated, Stale, GuidanceComplete, Inactive.
  
@@ -150,7 +160,7 @@ stateDiagram-v2
  
     Active --> [*] : Account deleted by Administrator
 ```
-![STD3 Screenshot](screenshot/STD3%20.png)
+![STD3 Screenshot](../academic-evidence/screenshots/STD3%20.png)
  
 **Key states**: PendingSetup, Active, MFARequired, Locked, PasswordReset, Suspended, Expired.
  
@@ -186,7 +196,7 @@ stateDiagram-v2
  
     Archived --> [*]
 ```
-![STD4 Screenshot](screenshot/STD4%20.png)
+![STD4 Screenshot](../academic-evidence/screenshots/STD4%20.png)
  
 **Key states**: Draft, Published, UnderEdit, Expired, Deactivated, Archived.
  
@@ -228,7 +238,7 @@ stateDiagram-v2
     ReceivedByUniversity --> [*]
     Deleted --> [*]
 ```
-![STD5 Screenshot](screenshot/STD5%20.png)
+![STD5 Screenshot](../academic-evidence/screenshots/STD5%20.png)
  
 **Key states**: Uploading, VirusScan, Stored, Unlinked, LinkedToApp, SubmittedWithApp, ReceivedByUniversity, Rejected, Quarantined.
  
@@ -258,7 +268,7 @@ stateDiagram-v2
     TimedOut --> [*] : Application remains FeeOutstanding, learner advised to check bank
     Bypassed --> [*] : Application auto-updated to FeePaid
 ```
-![STD6 Screenshot](screenshot/STD6%20.png)
+![STD6 Screenshot](../academic-evidence/screenshots/STD6%20.png)
  
 **Key states**: Initiated, AwaitingGateway, Confirmed, Declined, TimedOut, Bypassed.
  
@@ -297,7 +307,7 @@ stateDiagram-v2
     Read --> [*]
     Suppressed --> [*]
 ```
-![STD7 Screenshot](screenshot/STD7%20.png)
+![STD7 Screenshot](../academic-evidence/screenshots/STD7%20.png)
  
 **Key states**: Created, Queued, Suppressed, Dispatched, RetryPending, Delivered, Bounced, Read, Failed.
  
@@ -337,7 +347,7 @@ stateDiagram-v2
     Archived --> [*]
     Failed --> [*]
 ```
-![STD8 Screenshot](screenshot/STD8%20.png)
+![STD8 Screenshot](../academic-evidence/screenshots/STD8%20.png)
  
 **Key states**: Calculating, Generated, PartialResult, Stale, ViewedByTeacher, SharedWithLearner, UsedForSelection, Archived, Failed.
  
