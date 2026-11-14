@@ -4932,11 +4932,15 @@ def create_app(
                 for message in previous_messages
                 if message.role == "user"
             ][-3:]
-            contextual_question = " ".join(previous_questions + [payload.message])
+            # Use combined context for retrieval so follow-up questions find
+            # the right chunks, but answer only the current question so the
+            # AI does not conflate multiple independent questions.
+            retrieval_query = " ".join(previous_questions + [payload.message])
+            current_question = payload.message
             university_ids = {programme.university_id for programme in published_programmes}
             try:
                 indexed_chunks = knowledge_repo.list_active_chunks(university_ids)
-                matches = await asyncio.to_thread(retrieve_chunks, contextual_question, indexed_chunks)
+                matches = await asyncio.to_thread(retrieve_chunks, retrieval_query, indexed_chunks)
             except RagEmbeddingUnavailableError as exc:
                 raise HTTPException(status_code=503, detail=str(exc)) from exc
             except RagReindexRequiredError as exc:
@@ -4945,7 +4949,7 @@ def create_app(
             try:
                 answer, sources = await asyncio.to_thread(
                     response_provider.generate,
-                    contextual_question,
+                    current_question,
                     matches,
                     eligibility=eligibility_context,
                 )
@@ -4962,7 +4966,7 @@ def create_app(
                 response_provider = ExtractiveGroundedAnswerProvider()
                 answer, sources = await asyncio.to_thread(
                     response_provider.generate,
-                    contextual_question,
+                    current_question,
                     matches,
                     eligibility=eligibility_context,
                 )

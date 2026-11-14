@@ -625,11 +625,19 @@ class ApplicationService:
         if eligibility not in (EligibilityEnum.Guaranteed, EligibilityEnum.Likely):
             raise NotEligibleError(learner_id, eligibility, programme_id)
 
+        # Zero-fee applications skip the payment lifecycle entirely.
+        # They start in PackageIncomplete so learners are never left waiting
+        # on a fee step that has no cost.
+        initial_status = (
+            ApplicationStatusEnum.PackageIncomplete
+            if fee_amount == Decimal("0")
+            else ApplicationStatusEnum.Draft
+        )
         application = Application(
             application_id=uuid4(),
             learner_id=learner_id,
             programme_id=programme_id,
-            status=ApplicationStatusEnum.Draft,
+            status=initial_status,
             payment_reference=payment_reference,
             fee_amount=fee_amount,
             submission_timestamp=None,
