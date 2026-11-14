@@ -114,6 +114,9 @@ def bootstrap_system_admin_postgres(database_url: str) -> "UserAccount":
 
 def main() -> None:  # pragma: no cover
     """CLI entry point — not callable from HTTP."""
+    from dotenv import load_dotenv
+    load_dotenv()
+
     use_postgres = "--postgres" in sys.argv
 
     if use_postgres:
